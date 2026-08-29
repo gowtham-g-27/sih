@@ -1652,6 +1652,16 @@
 
     <!-- Scripts -->
     <script>
+        // Automatic API Base detection (works seamlessly on http://localhost:8080, custom ports, or direct file:// preview)
+        const API_BASE = (window.location.protocol === 'file:' || !window.location.host) ? 'http://localhost:8080' : '';
+        const _origFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (typeof url === 'string' && url.startsWith('/api/')) {
+                url = API_BASE + url;
+            }
+            return _origFetch.call(this, url, options);
+        };
+
         lucide.createIcons();
         let currentUser = null;
         let currentProfile = null;
@@ -1664,8 +1674,9 @@
         // ================= WEBSOCKET REAL-TIME CONNECTION =================
         function setupWebSocket() {
             try {
+                const host = window.location.host || 'localhost:8080';
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = `${protocol}//${window.location.host}`;
+                const wsUrl = `${protocol}//${host}`;
                 wsClient = new WebSocket(wsUrl);
 
                 wsClient.onopen = () => {
