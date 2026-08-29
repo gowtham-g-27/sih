@@ -1376,11 +1376,12 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 sm:p-8 relative shadow-2xl">
             <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             <h3 class="text-2xl font-bold text-white mb-2" id="auth-modal-title">Login</h3>
+            <div id="auth-error-msg" class="hidden mb-4 p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-medium"></div>
             <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div id="reg-fields" class="space-y-4 hidden">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
-                        <input type="text" id="reg-name" placeholder="Full Name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                        <input type="text" id="reg-name" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Mobile Number (with +91)</label>
@@ -1390,8 +1391,8 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-400 mb-1">Role</label>
                             <select id="reg-role" onchange="toggleRoleFields(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
-                                <option value="CUSTOMER">Customer</option>
-                                <option value="WORKER">Worker</option>
+                                <option value="CUSTOMER">Customer (Household)</option>
+                                <option value="WORKER">Worker (Trade Expert)</option>
                                 <option value="ADMIN">Administrator</option>
                             </select>
                         </div>
@@ -1420,11 +1421,11 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Experience (Years)</label>
-                                <input type="number" id="reg-exp" value="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                                <input type="number" id="reg-exp" value="2" min="1" max="40" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Hourly Rate (₹)</label>
-                                <input type="number" id="reg-rate" value="500" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                                <input type="number" id="reg-rate" value="500" min="100" step="50" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
                             </div>
                         </div>
                     </div>
@@ -3773,14 +3774,27 @@
             const title = document.getElementById('auth-modal-title');
             const submitBtn = document.getElementById('auth-submit-btn');
             const regFields = document.getElementById('reg-fields');
+            const toggleText = document.getElementById('auth-toggle-text');
+            const toggleBtn = document.getElementById('auth-toggle-btn');
+            const errBox = document.getElementById('auth-error-msg');
+            if (errBox) { errBox.classList.add('hidden'); errBox.textContent = ''; }
+
             if(mode === 'register') {
-                title.textContent = 'Register on CoopServe';
-                submitBtn.textContent = 'Register';
+                title.textContent = 'Create an Account';
+                submitBtn.textContent = 'Register & Join CoopServe';
                 regFields.classList.remove('hidden');
+                if (toggleText) toggleText.textContent = 'Already have an account?';
+                if (toggleBtn) toggleBtn.textContent = 'Login';
+                const nameInput = document.getElementById('reg-name');
+                if (nameInput) nameInput.required = true;
             } else {
                 title.textContent = 'Login to CoopServe';
                 submitBtn.textContent = 'Login';
                 regFields.classList.add('hidden');
+                if (toggleText) toggleText.textContent = "Don't have an account?";
+                if (toggleBtn) toggleBtn.textContent = 'Register';
+                const nameInput = document.getElementById('reg-name');
+                if (nameInput) nameInput.required = false;
             }
             document.getElementById('auth-modal').classList.remove('hidden');
         }
@@ -3795,17 +3809,28 @@
 
         async function handleAuthSubmit(e) {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
+            const errBox = document.getElementById('auth-error-msg');
+            if (errBox) { errBox.classList.add('hidden'); errBox.textContent = ''; }
+
+            const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
 
             if(authMode === 'register') {
-                const name = document.getElementById('reg-name').value;
-                const phone = document.getElementById('reg-phone').value;
+                const name = document.getElementById('reg-name').value.trim();
+                const phone = document.getElementById('reg-phone').value.trim();
                 const role = document.getElementById('reg-role').value;
                 const gender = document.getElementById('reg-gender').value;
                 const primary_skill = document.getElementById('reg-skill').value;
                 const experience_years = document.getElementById('reg-exp').value;
                 const hourly_rate = document.getElementById('reg-rate').value;
+
+                if (!name) {
+                    if (errBox) {
+                        errBox.textContent = 'Please enter your full name.';
+                        errBox.classList.remove('hidden');
+                    }
+                    return;
+                }
 
                 try {
                     const res = await fetch('/api/auth/register', {
@@ -3815,11 +3840,33 @@
                     });
                     const json = await res.json();
                     if(json.success) {
+                        currentUser = json.data.user;
+                        currentProfile = json.data.profile;
                         closeAuthModal();
-                        showToast('Registration Successful', 'Please log in.');
-                        openAuthModal('login');
-                    } else { alert(json.message); }
-                } catch(e) { alert('Registration failed'); }
+                        updateAuthUI();
+                        showToast('Registration Successful 🎉', `Welcome to CoopServe, ${currentUser.name}!`);
+                        switchRole(currentUser.role.toLowerCase());
+                        if (currentUser.role === 'WORKER') {
+                            loadWorkerData();
+                        } else if (currentUser.role === 'CUSTOMER') {
+                            loadCustomerData();
+                        }
+                    } else {
+                        if (errBox) {
+                            errBox.textContent = json.message || 'Registration failed.';
+                            errBox.classList.remove('hidden');
+                        } else {
+                            alert(json.message);
+                        }
+                    }
+                } catch(e) {
+                    if (errBox) {
+                        errBox.textContent = 'Registration failed due to connection error. Please try again.';
+                        errBox.classList.remove('hidden');
+                    } else {
+                        alert('Registration failed');
+                    }
+                }
             } else {
                 try {
                     const res = await fetch('/api/auth/login', {
@@ -3833,10 +3880,29 @@
                         currentProfile = json.data.profile;
                         closeAuthModal();
                         updateAuthUI();
-                        showToast('Login Successful', `Welcome, ${currentUser.name}!`);
+                        showToast('Login Successful 🔓', `Welcome back, ${currentUser.name}!`);
                         switchRole(currentUser.role.toLowerCase());
-                    } else { alert(json.message); }
-                } catch(e) { alert('Login failed'); }
+                        if (currentUser.role === 'WORKER') {
+                            loadWorkerData();
+                        } else if (currentUser.role === 'CUSTOMER') {
+                            loadCustomerData();
+                        }
+                    } else {
+                        if (errBox) {
+                            errBox.textContent = json.message || 'Invalid email or password.';
+                            errBox.classList.remove('hidden');
+                        } else {
+                            alert(json.message);
+                        }
+                    }
+                } catch(e) {
+                    if (errBox) {
+                        errBox.textContent = 'Login failed due to connection error. Please try again.';
+                        errBox.classList.remove('hidden');
+                    } else {
+                        alert('Login failed');
+                    }
+                }
             }
         }
 

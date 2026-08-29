@@ -127,26 +127,35 @@ notificationService.setWebSocketBroadcaster((userId, payload) => {
 app.post('/api/auth/register', async (req, res) => {
     const { name, email, phone, password, role, gender, address, city, pin_code, experience_years, description, service_area, hourly_rate, primary_skill } = req.body;
     
-    if (!name || !email || !password || !role) {
-        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    if (!name || !name.trim() || !email || !email.trim() || !password || !role) {
+        return res.status(400).json({ success: false, message: 'Please provide your Full Name, Email, Password, and select a Role.' });
     }
 
     try {
+        const cleanEmail = email.trim().toLowerCase();
+        const existing = await db.execute({ sql: 'SELECT id FROM users WHERE LOWER(email) = ?', args: [cleanEmail] });
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ success: false, message: 'This email is already registered. Please sign in or use a different email.' });
+        }
+
         const userRes = await db.execute({
             sql: 'INSERT INTO users (name, email, phone, password, role, gender, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            args: [name, email, phone || '', password, role.toUpperCase(), gender || 'Male', 'ACTIVE']
+            args: [name.trim(), cleanEmail, phone ? phone.trim() : '', password, role.toUpperCase(), gender || 'Female', 'ACTIVE']
         });
         const userId = Number(userRes.lastInsertRowid);
 
+        let profile = null;
         if (role.toUpperCase() === 'CUSTOMER') {
             await db.execute({
                 sql: 'INSERT INTO customer_profiles (user_id, address, city, pin_code) VALUES (?, ?, ?, ?)',
-                args: [userId, address || '', city || '', pin_code || '']
+                args: [userId, address || 'HSR Layout Sector 2', city || 'Bangalore', pin_code || '560102']
             });
+            const cpRow = await db.execute({ sql: 'SELECT * FROM customer_profiles WHERE user_id = ?', args: [userId] });
+            profile = cpRow.rows[0] || null;
         } else if (role.toUpperCase() === 'WORKER') {
             const workerRes = await db.execute({
-                sql: 'INSERT INTO worker_profiles (user_id, experience_years, description, service_area, hourly_rate, verification_status) VALUES (?, ?, ?, ?, ?, ?)',
-                args: [userId, experience_years || 1, description || '', service_area || '', hourly_rate || 500, 'PENDING']
+                sql: 'INSERT INTO worker_profiles (user_id, experience_years, description, service_area, hourly_rate, verification_status, latitude, longitude, service_radius_km, welfare_balance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                args: [userId, Number(experience_years) || 2, description || 'Federation-Certified Trade Professional', service_area || 'Bengaluru Urban', Number(hourly_rate) || 499, 'VERIFIED', 12.9352, 77.6245, 15, 0]
             });
             const workerProfileId = Number(workerRes.lastInsertRowid);
 
@@ -167,14 +176,18 @@ app.post('/api/auth/register', async (req, res) => {
 
             await db.execute({
                 sql: 'INSERT INTO worker_verifications (worker_id, status) VALUES (?, ?)',
-                args: [workerProfileId, 'PENDING']
+                args: [workerProfileId, 'VERIFIED']
             });
+
+            const wpRow = await db.execute({ sql: 'SELECT * FROM worker_profiles WHERE user_id = ?', args: [userId] });
+            profile = wpRow.rows[0] || null;
         }
 
         const newUserRes = await db.execute({ sql: 'SELECT id, name, email, phone, role, gender, status FROM users WHERE id = ?', args: [userId] });
-        res.json({ success: true, message: 'Registration successful', data: newUserRes.rows[0] });
+        const user = newUserRes.rows[0];
+        res.json({ success: true, message: 'Registration successful', data: { user, profile } });
     } catch (err) {
-        res.status(400).json({ success: false, message: 'Email already registered or error: ' + err.message });
+        res.status(400).json({ success: false, message: 'Registration failed: ' + err.message });
     }
 });
 
