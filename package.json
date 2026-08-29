@@ -1,0 +1,14 @@
+{
+  "name": "coopserve-platform",
+  "version": "1.0.0",
+  "description": "Cooperative Service Marketplace Platform (CoopServe)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
