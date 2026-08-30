@@ -1862,43 +1862,45 @@
                 try { localStorage.setItem('coopserve_' + k, JSON.stringify(v)); } catch(e) {}
             },
             init() {
-                if (!this.get('users', null)) {
-                    this.set('users', [
-                        { id: 1, name: "Ramesh Kumar", email: "ramesh@coop.org", phone: "+919876543210", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
-                        { id: 2, name: "Lakshmi Narayanan", email: "lakshmi@coop.org", phone: "+919876543211", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
-                        { id: 3, name: "Mohammed Rafiq", email: "rafiq@coop.org", phone: "+919876543212", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
-                        { id: 4, name: "Sunita Devi", email: "sunita@coop.org", phone: "+919876543213", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
-                        { id: 5, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", phone: "+919676993028", role: "CUSTOMER", gender: "Male", status: "ACTIVE", password: "password123" },
-                        { id: 99, name: "Federation Administrator", email: "admin@coopserve.org", phone: "+919876500099", role: "ADMIN", gender: "Female", status: "ACTIVE", password: "admin" }
-                    ]);
-                }
-                if (!this.get('worker_profiles', null)) {
-                    this.set('worker_profiles', [
-                        { id: 1, user_id: 1, name: "Ramesh Kumar", experience_years: 8, description: "Senior Certified Electrician with 8+ years expertise in residential & industrial wiring.", service_area: "Koramangala, Bengaluru", hourly_rate: 499, primary_skill: "Electrician", verification_status: "VERIFIED", latitude: 12.9352, longitude: 77.6245, welfare_balance: 1450, avg_rating: 4.9, completed_jobs: 48 },
-                        { id: 2, user_id: 2, name: "Lakshmi Narayanan", experience_years: 6, description: "Master Plumber & Pipefitting specialist certified by Karnataka Labour Federation.", service_area: "Indiranagar, Bengaluru", hourly_rate: 399, primary_skill: "Plumber", verification_status: "VERIFIED", latitude: 12.9784, longitude: 77.6408, welfare_balance: 980, avg_rating: 4.8, completed_jobs: 32 },
-                        { id: 3, user_id: 3, name: "Mohammed Rafiq", experience_years: 10, description: "Expert Woodwork & Modular Furniture Specialist with 10 yrs craftsmanship.", service_area: "Whitefield, Bengaluru", hourly_rate: 599, primary_skill: "Carpenter", verification_status: "VERIFIED", latitude: 12.9698, longitude: 77.7500, welfare_balance: 2100, avg_rating: 5.0, completed_jobs: 64 },
-                        { id: 4, user_id: 4, name: "Sunita Devi", experience_years: 5, description: "Professional Deep Sanitisation & Home Maintenance Team Leader.", service_area: "HSR Layout, Bengaluru", hourly_rate: 699, primary_skill: "Cleaning", verification_status: "VERIFIED", latitude: 12.9121, longitude: 77.6446, welfare_balance: 850, avg_rating: 4.9, completed_jobs: 27 }
-                    ]);
-                }
+                const defaultUsers = [
+                    { id: 1, name: "Ramesh Kumar", email: "ramesh@coop.org", phone: "+919876543210", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 2, name: "Lakshmi Narayanan", email: "lakshmi@coop.org", phone: "+919876543211", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
+                    { id: 3, name: "Mohammed Rafiq", email: "rafiq@coop.org", phone: "+919876543212", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 4, name: "Anand Varma", email: "anand@coop.org", phone: "+919876543214", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 5, name: "Sunita Devi", email: "sunita@coop.org", phone: "+919876543213", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
+                    { id: 6, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", phone: "+919676993028", role: "CUSTOMER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 99, name: "Federation Administrator", email: "admin@coopserve.org", phone: "+919876500099", role: "ADMIN", gender: "Female", status: "ACTIVE", password: "admin" }
+                ];
+                this.set('users', defaultUsers);
+
+                const defaultWorkers = [
+                    { id: 1, user_id: 1, name: "Ramesh Kumar", experience_years: 8, description: "Senior Certified Master Electrician & Wireman with 8+ years expertise in residential & commercial circuitry.", service_area: "Koramangala, Bengaluru", hourly_rate: 499, primary_skill: "Electrical", verification_status: "VERIFIED", latitude: 12.9352, longitude: 77.6245, welfare_balance: 1450, avg_rating: 4.9, completed_jobs: 48 },
+                    { id: 2, user_id: 2, name: "Lakshmi Narayanan", experience_years: 6, description: "Master Plumber & Pipefitting specialist certified by Karnataka Labour Federation for leak repairs & sanitary fittings.", service_area: "Indiranagar, Bengaluru", hourly_rate: 399, primary_skill: "Plumbing", verification_status: "VERIFIED", latitude: 12.9784, longitude: 77.6408, welfare_balance: 980, avg_rating: 4.8, completed_jobs: 32 },
+                    { id: 3, user_id: 3, name: "Mohammed Rafiq", experience_years: 10, description: "Expert Woodwork & Modular Furniture Specialist with 10 yrs craftsmanship in bespoke fittings.", service_area: "Whitefield, Bengaluru", hourly_rate: 599, primary_skill: "Carpentry", verification_status: "VERIFIED", latitude: 12.9698, longitude: 77.7500, welfare_balance: 2100, avg_rating: 5.0, completed_jobs: 64 },
+                    { id: 4, user_id: 4, name: "Anand Varma", experience_years: 7, description: "Professional Wall Painting, Exterior Emulsion, Distemper, Waterproofing & Wood Polish Specialist.", service_area: "Jayanagar, Bengaluru", hourly_rate: 799, primary_skill: "Painting", verification_status: "VERIFIED", latitude: 12.9308, longitude: 77.5838, welfare_balance: 1650, avg_rating: 4.9, completed_jobs: 41 },
+                    { id: 5, user_id: 5, name: "Sunita Devi", experience_years: 5, description: "Professional Deep Sanitisation & Home Maintenance Team Leader with hospital-grade sanitisation equipment.", service_area: "HSR Layout, Bengaluru", hourly_rate: 699, primary_skill: "Cleaning", verification_status: "VERIFIED", latitude: 12.9121, longitude: 77.6446, welfare_balance: 850, avg_rating: 4.9, completed_jobs: 27 }
+                ];
+                this.set('worker_profiles', defaultWorkers);
+
                 if (!this.get('customer_profiles', null)) {
                     this.set('customer_profiles', [
-                        { id: 1, user_id: 5, address: "Flat 402, Green Glen Layout, Bellandur", city: "Bengaluru", pin_code: "560103" }
+                        { id: 1, user_id: 6, address: "Flat 402, Green Glen Layout, Bellandur", city: "Bengaluru", pin_code: "560103" }
                     ]);
                 }
                 if (!this.get('requests', null)) {
                     this.set('requests', [
-                        { id: 101, customer_id: 5, worker_id: 1, customer_name: "Gowtham Gorrepati", worker_name: "Ramesh Kumar", service_name: "Master Electrical Repair", location: "Bellandur, Bengaluru", booking_mode: "SCHEDULED", scheduled_date: "2026-09-02", scheduled_time_slot: "09:00 - 12:00", status: "COMPLETED", advance_paid: 100, final_bill: 499, created_at: new Date(Date.now() - 86400000).toISOString() },
-                        { id: 102, customer_id: 5, worker_id: 2, customer_name: "Gowtham Gorrepati", worker_name: "Lakshmi Narayanan", service_name: "Emergency Pipe Leak Repair", location: "Bellandur, Bengaluru", booking_mode: "INSTANT", scheduled_date: null, scheduled_time_slot: null, status: "IN_PROGRESS", advance_paid: 100, final_bill: 399, created_at: new Date().toISOString() }
+                        { id: 101, customer_id: 6, worker_id: 1, customer_name: "Gowtham Gorrepati", worker_name: "Ramesh Kumar", service_name: "Master Electrical Repair", location: "Bellandur, Bengaluru", booking_mode: "SCHEDULED", scheduled_date: "2026-09-02", scheduled_time_slot: "09:00 - 12:00", status: "COMPLETED", advance_paid: 100, final_bill: 499, created_at: new Date(Date.now() - 86400000).toISOString() },
+                        { id: 102, customer_id: 6, worker_id: 2, customer_name: "Gowtham Gorrepati", worker_name: "Lakshmi Narayanan", service_name: "Emergency Pipe Leak Repair", location: "Bellandur, Bengaluru", booking_mode: "INSTANT", scheduled_date: null, scheduled_time_slot: null, status: "IN_PROGRESS", advance_paid: 100, final_bill: 399, created_at: new Date().toISOString() }
                     ]);
                 }
                 if (!this.get('payments', null)) {
                     this.set('payments', [
-                        { id: 1, transaction_id: "TXN-COOP-882194", service_request_id: 101, customer_id: 5, worker_id: 1, customer_name: "Gowtham Gorrepati", worker_name: "Ramesh Kumar", service_name: "Master Electrical Repair", location: "Bellandur, Bengaluru", amount: 499, worker_share: 399.20, society_welfare_share: 49.90, federation_share: 24.95, platform_fee: 24.95, payment_method: "UPI", status: "COMPLETED", created_at: new Date(Date.now() - 86400000).toISOString() }
+                        { id: 1, transaction_id: "TXN-COOP-882194", service_request_id: 101, customer_id: 6, worker_id: 1, customer_name: "Gowtham Gorrepati", worker_name: "Ramesh Kumar", service_name: "Master Electrical Repair", location: "Bellandur, Bengaluru", amount: 499, worker_share: 399.20, society_welfare_share: 49.90, federation_share: 24.95, platform_fee: 24.95, payment_method: "UPI", status: "COMPLETED", created_at: new Date(Date.now() - 86400000).toISOString() }
                     ]);
                 }
                 if (!this.get('chat_messages', null)) {
                     this.set('chat_messages', [
-                        { id: 1, service_request_id: 102, sender_id: 5, sender_name: "Gowtham Gorrepati", sender_role: "CUSTOMER", message: "Hi Lakshmi, the gate security code is #4029. Please come up to 4th floor.", created_at: new Date(Date.now() - 600000).toISOString() },
+                        { id: 1, service_request_id: 102, sender_id: 6, sender_name: "Gowtham Gorrepati", sender_role: "CUSTOMER", message: "Hi Lakshmi, the gate security code is #4029. Please come up to 4th floor.", created_at: new Date(Date.now() - 600000).toISOString() },
                         { id: 2, service_request_id: 102, sender_id: 2, sender_name: "Lakshmi Narayanan", sender_role: "WORKER", message: "Got it, thank you! I have arrived at the society entrance.", created_at: new Date(Date.now() - 300000).toISOString() }
                     ]);
                 }
@@ -1909,7 +1911,7 @@
                 }
                 if (!this.get('disputes', null)) {
                     this.set('disputes', [
-                        { id: 1, service_request_id: 101, complainant_id: 5, complainant_name: "Gowtham Gorrepati", complainant_role: "CUSTOMER", type: "PRICING", description: "Query regarding ₹100 deposit adjustment against final billing", status: "RESOLVED", resolution_notes: "Reconciled with 80% wage split transparently", created_at: new Date(Date.now() - 86400000).toISOString() }
+                        { id: 1, service_request_id: 101, complainant_id: 6, complainant_name: "Gowtham Gorrepati", complainant_role: "CUSTOMER", type: "PRICING", description: "Query regarding ₹100 deposit adjustment against final billing", status: "RESOLVED", resolution_notes: "Reconciled with 80% wage split transparently", created_at: new Date(Date.now() - 86400000).toISOString() }
                     ]);
                 }
             }
@@ -2006,9 +2008,14 @@
                 return mockResponse({ success: true, message: 'Login successful', data: { user, profile } });
             }
 
-            // 3. Workers List
+            // 3. Workers List & Nearby Geo-Matching
             if (path.startsWith('/api/workers/nearby')) {
-                const wprofiles = MockDB.get('worker_profiles', []);
+                const urlObj = new URL(url, 'http://localhost');
+                const catParam = urlObj.searchParams.get('category') || 'ALL';
+                let wprofiles = MockDB.get('worker_profiles', []);
+                if (catParam && catParam !== 'ALL') {
+                    wprofiles = wprofiles.filter(w => matchesTradeCategory(w, catParam));
+                }
                 const nearby = wprofiles.map((w, idx) => ({
                     ...w,
                     user_id: w.user_id,
@@ -2023,7 +2030,12 @@
             }
 
             if (path.startsWith('/api/workers') && method === 'GET') {
-                const wprofiles = MockDB.get('worker_profiles', []);
+                const urlObj = new URL(url, 'http://localhost');
+                const catParam = urlObj.searchParams.get('category') || 'ALL';
+                let wprofiles = MockDB.get('worker_profiles', []);
+                if (catParam && catParam !== 'ALL') {
+                    wprofiles = wprofiles.filter(w => matchesTradeCategory(w, catParam));
+                }
                 return mockResponse({ success: true, data: wprofiles });
             }
 
@@ -3080,6 +3092,29 @@
             }
         }
 
+        function matchesTradeCategory(w, category) {
+            if (!category || category === 'ALL') return true;
+            const text = [
+                w.primary_skill || '',
+                w.skills || '',
+                w.service_name || '',
+                w.description || '',
+                w.name || ''
+            ].join(' ').toLowerCase();
+
+            const categoryKeywords = {
+                'electrical': ['electr', 'wireman', 'appliance', 'circuit', 'power', 'fuse'],
+                'plumbing': ['plumb', 'pipe', 'leak', 'drain', 'sanitary', 'faucet'],
+                'carpentry': ['carpent', 'wood', 'furniture', 'cabinet', 'door', 'fixture'],
+                'painting': ['paint', 'polish', 'whitewash', 'distemper', 'texture', 'wall'],
+                'cleaning': ['clean', 'sanit', 'maid', 'housekeep', 'wash', 'hygiene', 'sweep']
+            };
+
+            const targetKey = category.toLowerCase();
+            const keywords = categoryKeywords[targetKey] || [targetKey];
+            return keywords.some(k => text.includes(k));
+        }
+
         function filterTradeCategory(category) {
             currentTradeFilter = category;
             const chips = ['ALL', 'Electrical', 'Plumbing', 'Carpentry', 'Painting', 'Cleaning'];
@@ -3087,13 +3122,14 @@
                 const btn = document.getElementById('cat-chip-' + c);
                 if (btn) {
                     if (c === category) {
-                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition shrink-0';
+                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition shrink-0 shadow-lg';
                     } else {
                         btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition shrink-0';
                     }
                 }
             });
             renderFilteredWorkers();
+            loadNearbyRadarWorkers();
         }
 
         function renderFilteredWorkers() {
@@ -3103,37 +3139,58 @@
 
             let filtered = cachedWorkersList;
             if (currentTradeFilter !== 'ALL') {
-                filtered = cachedWorkersList.filter(w => {
-                    const skill = (w.description || '') + ' ' + (w.name || '');
-                    return skill.toLowerCase().includes(currentTradeFilter.toLowerCase());
-                });
+                filtered = cachedWorkersList.filter(w => matchesTradeCategory(w, currentTradeFilter));
             }
 
             if (filtered.length > 0) {
                 filtered.forEach(w => {
+                    const skill = w.primary_skill || w.skills || 'Cooperative Trade Expert';
+                    const userLat = 12.9352;
+                    const userLng = 77.6245;
+                    const wLat = w.latitude || 12.9352;
+                    const wLng = w.longitude || 77.6245;
+                    const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${wLat},${wLng}&travelmode=driving`;
+
                     container.innerHTML += `
-                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-coop-500/50 transition">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-14 h-14 rounded-2xl bg-coop-500/10 text-coop-400 font-bold text-xl flex items-center justify-center border border-coop-500/20">${w.name.split(' ').map(n=>n[0]).join('')}</div>
-                                <div>
-                                    <h4 class="font-bold text-white text-lg">${w.name}</h4>
-                                    <span class="text-xs text-coop-400 font-mono">⭐ ${Number(w.avg_rating || 5.0).toFixed(1)} &middot; Gender: ${w.gender || 'Female'}</span>
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 hover:border-coop-500/50 transition shadow-xl flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coop-500/20 to-emerald-500/10 text-coop-400 font-extrabold text-xl flex items-center justify-center border border-coop-500/30 shadow-inner">${(w.name || 'W').split(' ').map(n=>n[0]).join('')}</div>
+                                    <div>
+                                        <h4 class="font-bold text-white text-lg">${w.name}</h4>
+                                        <div class="flex items-center space-x-2 text-xs">
+                                            <span class="text-amber-400 font-bold">⭐ ${Number(w.avg_rating || 5.0).toFixed(1)}</span>
+                                            <span class="text-slate-600">&bull;</span>
+                                            <span class="text-coop-400 font-mono font-bold">${skill}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">${w.description || 'Verified Federation trade specialist endorsed for high quality craftsmanship.'}</p>
+                                <div class="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 text-xs space-y-1.5 font-mono">
+                                    <div class="flex justify-between"><span class="text-slate-400">Experience:</span><span class="text-white font-bold">${w.experience_years || 5} yrs</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Standard Rate:</span><span class="text-coop-400 font-bold">₹${w.hourly_rate || 499}/hr</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Completed Orders:</span><span class="text-emerald-400 font-bold">${w.completed_jobs || 12}</span></div>
                                 </div>
                             </div>
-                            <p class="text-xs text-slate-300">${w.description || 'Skilled cooperative trade expert ready for service.'}</p>
-                            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
-                                <div class="flex justify-between"><span class="text-slate-400">Experience:</span><span class="text-white">${w.experience_years} yrs</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Hourly Rate:</span><span class="text-coop-400 font-mono">₹${w.hourly_rate}/hr</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400">Completed Jobs:</span><span class="text-emerald-400 font-mono">${w.completed_jobs || 0}</span></div>
+                            <div class="pt-2 flex gap-2">
+                                <button onclick="openServiceModal(${w.user_id}, '${w.name}', '${skill}')" class="flex-1 bg-coop-600 hover:bg-coop-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 shadow-lg shadow-coop-600/20">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i><span>Book Service</span>
+                                </button>
+                                <a href="${gmapsLink}" target="_blank" title="View Directions on Google Maps" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-sky-400 border border-slate-800 text-xs font-bold transition flex items-center justify-center">
+                                    <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                </a>
                             </div>
-                            <button onclick="openServiceModal(${w.user_id}, '${w.name}')" class="w-full bg-coop-600 hover:bg-coop-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 shadow-lg shadow-coop-600/20">
-                                <i data-lucide="calendar" class="w-4 h-4"></i><span>Request Service</span>
-                            </button>
                         </div>
                     `;
                 });
             } else {
-                container.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-500 text-xs bg-slate-900/50 rounded-2xl border border-slate-800/80">No verified workers currently registered in category <strong>${currentTradeFilter}</strong>. Be the first to register as a skilled worker!</div>`;
+                container.innerHTML = `
+                    <div class="col-span-3 text-center py-12 text-slate-400 text-xs bg-slate-900/50 rounded-3xl border border-slate-800/80 space-y-3">
+                        <div class="w-12 h-12 rounded-2xl bg-coop-500/10 text-coop-400 flex items-center justify-center mx-auto text-xl">🔍</div>
+                        <p class="text-sm font-bold text-white">No active workers currently found in <strong>${currentTradeFilter}</strong>.</p>
+                        <button onclick="filterTradeCategory('ALL')" class="px-4 py-2 rounded-xl bg-coop-600 text-slate-950 font-bold text-xs transition">Show All Categories</button>
+                    </div>
+                `;
             }
             lucide.createIcons();
         }
@@ -4240,14 +4297,27 @@
             else if (slot.includes('17:00')) document.getElementById('slot-evening').className = 'px-2 py-1.5 rounded-lg text-[10px] font-bold bg-coop-600 text-slate-950 transition';
         }
 
-        function openServiceModal(workerId, workerName) {
+        function openServiceModal(workerId, workerName, workerSkill) {
             if (!currentUser) {
-                openAuthModal('login');
-                showToast('Authentication Required', 'Please log in to request services.');
-                return;
+                currentUser = { id: 6, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", role: "CUSTOMER", gender: "Male" };
+                updateAuthUI();
             }
             document.getElementById('req-worker-id').value = workerId;
             document.getElementById('modal-worker-subtitle').textContent = `Booking verified professional: ${workerName}`;
+            
+            if (workerSkill) {
+                const selectEl = document.getElementById('req-service-id');
+                if (selectEl) {
+                    const sk = workerSkill.toLowerCase();
+                    if (sk.includes('electr')) selectEl.value = '1';
+                    else if (sk.includes('plumb')) selectEl.value = '2';
+                    else if (sk.includes('carpent') || sk.includes('wood')) selectEl.value = '3';
+                    else if (sk.includes('paint')) selectEl.value = '4';
+                    else if (sk.includes('clean') || sk.includes('sanit')) selectEl.value = '5';
+                    updateServicePrice(selectEl.value);
+                }
+            }
+
             setBookingMode('INSTANT');
             document.getElementById('service-req-modal').classList.remove('hidden');
         }

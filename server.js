@@ -991,7 +991,16 @@ app.get('/api/workers/nearby', async (req, res) => {
         .filter(w => {
             if (category && category !== 'ALL') {
                 const text = ((w.skills || '') + ' ' + (w.description || '') + ' ' + (w.name || '')).toLowerCase();
-                if (!text.includes(category.toLowerCase())) return false;
+                const categoryKeywords = {
+                    'electrical': ['electr', 'wireman', 'appliance', 'circuit', 'power', 'fuse'],
+                    'plumbing': ['plumb', 'pipe', 'leak', 'drain', 'sanitary', 'faucet'],
+                    'carpentry': ['carpent', 'wood', 'furniture', 'cabinet', 'door', 'fixture'],
+                    'painting': ['paint', 'polish', 'whitewash', 'distemper', 'texture', 'wall'],
+                    'cleaning': ['clean', 'sanit', 'maid', 'housekeep', 'wash', 'hygiene', 'sweep']
+                };
+                const targetKey = category.toLowerCase();
+                const keywords = categoryKeywords[targetKey] || [targetKey];
+                if (!keywords.some(k => text.includes(k))) return false;
             }
             return w.distance_km <= radius;
         })
