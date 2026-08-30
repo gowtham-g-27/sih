@@ -2438,8 +2438,8 @@
                         } else if (msg.type === 'NOTIFICATION') {
                             showToast(msg.data.title, msg.data.message);
                             loadNotifications();
-                            if (currentUser.role === 'CUSTOMER') loadCustomerRequests();
-                            if (currentUser.role === 'WORKER') loadWorkerData();
+                            if (currentUser && currentUser.role === 'CUSTOMER') loadCustomerRequests();
+                            if (currentUser && currentUser.role === 'WORKER') loadWorkerData();
                         }
                     } catch(e) { console.error('WS Parse Error:', e); }
                 };
@@ -2457,6 +2457,17 @@
         // Role Switcher
         let activePortalRole = 'customer';
         function switchRole(role, skipAuth = false) {
+            if (role === 'worker' && (!currentUser || currentUser.role !== 'WORKER')) {
+                openAuthModal('login');
+                showToast('Worker Sign In Required 👷', 'Please log in to your verified worker account to access the workspace.');
+                return;
+            }
+            if (role === 'admin' && (!currentUser || currentUser.role !== 'ADMIN')) {
+                openAuthModal('login');
+                showToast('Administrator Sign In Required 🏛️', 'Please log in with administrator credentials.');
+                return;
+            }
+
             activePortalRole = role;
 
             ['customer', 'worker', 'admin'].forEach(r => {
@@ -2785,6 +2796,7 @@
 
         // ================= 4. ADVANCED ADMIN REPORTING & CSV EXPORTS =================
         async function loadAdminData() {
+            if (!currentUser || currentUser.role !== 'ADMIN') return;
             try {
                 // 1. Overall Stats
                 const statsRes = await fetch('/api/admin/stats');
@@ -4397,8 +4409,13 @@
 
         function openServiceModal(workerId, workerName, workerSkill) {
             if (!currentUser) {
-                currentUser = { id: 6, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", role: "CUSTOMER", gender: "Male" };
-                updateAuthUI();
+                openAuthModal('login');
+                showToast('Customer Sign In Required 👤', 'Please sign in or register with a customer account to book verified services.');
+                return;
+            }
+            if (currentUser.role !== 'CUSTOMER') {
+                showToast('Customer Account Needed', 'Please sign in with a customer account to make bookings.');
+                return;
             }
             currentSelectedWorkerName = workerName || 'Verified Technician';
             currentSelectedWorkerSkill = workerSkill || 'General';
@@ -4610,7 +4627,8 @@
         }
 
         async function loadWorkerEarnings() {
-            const workerId = (currentUser && currentUser.role === 'WORKER') ? currentUser.id : 1;
+            if (!currentUser || currentUser.role !== 'WORKER') return;
+            const workerId = currentUser.id;
             try {
                 const res = await fetch(`/api/admin/reports/wage-splits`);
                 const json = await res.json();
@@ -4644,7 +4662,8 @@
         }
 
         async function loadWorkerWelfarePassbook() {
-            const workerId = (currentUser && currentUser.role === 'WORKER') ? currentUser.id : 1;
+            if (!currentUser || currentUser.role !== 'WORKER') return;
+            const workerId = currentUser.id;
             try {
                 const res = await fetch(`/api/welfare/passbook/${workerId}`);
                 const json = await res.json();
@@ -4658,15 +4677,15 @@
                     const depTable = document.getElementById('welfare-deposits-table');
                     if (depTable) {
                         depTable.innerHTML = '';
-                        const contributions = data.recent_transactions || data.recent_contributions || [];
-                        if (contributions.length > 0) {
-                            contributions.forEach(c => {
+                        const deposits = data.deposits || [];
+                        if (deposits.length > 0) {
+                            deposits.forEach(d => {
                                 depTable.innerHTML += `
                                     <tr>
-                                        <td class="p-2.5 font-mono text-[10px] text-slate-400">${(c.transaction_id || 'TXN-882').slice(0, 15)}...</td>
-                                        <td class="p-2.5 text-white font-medium">${c.service_name || 'Trade Service'}</td>
-                                        <td class="p-2.5 text-right font-mono">₹${c.job_amount || c.amount || 499}</td>
-                                        <td class="p-2.5 text-right font-mono text-cyan-400 font-bold">+₹${c.welfare_accrued || c.society_welfare_share || '49.90'}</td>
+                                        <td class="p-2.5 font-mono text-[10px]">#DEP-${d.id}</td>
+                                        <td class="p-2.5 text-white font-medium text-[11px]">Job #${d.service_request_id || 101} Completion</td>
+                                        <td class="p-2.5 text-right font-mono text-emerald-400 font-bold">+₹${d.amount}</td>
+                                        <td class="p-2.5 text-right font-mono text-slate-400 text-[10px]">${new Date(d.created_at).toLocaleDateString()}</td>
                                     </tr>
                                 `;
                             });
@@ -4738,8 +4757,9 @@
         }
 
         async function loadWorkerData() {
-            const workerId = (currentUser && currentUser.role === 'WORKER') ? currentUser.id : 1;
-            const workerName = (currentUser && currentUser.role === 'WORKER') ? currentUser.name : 'Ramesh Kumar';
+            if (!currentUser || currentUser.role !== 'WORKER') return;
+            const workerId = currentUser.id;
+            const workerName = currentUser.name;
             
             const nameEl = document.getElementById('worker-name');
             if (nameEl) nameEl.textContent = workerName;
