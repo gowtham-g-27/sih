@@ -1864,21 +1864,31 @@
             init() {
                 const defaultUsers = [
                     { id: 1, name: "Ramesh Kumar", email: "ramesh@coop.org", phone: "+919876543210", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
-                    { id: 2, name: "Lakshmi Narayanan", email: "lakshmi@coop.org", phone: "+919876543211", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
-                    { id: 3, name: "Mohammed Rafiq", email: "rafiq@coop.org", phone: "+919876543212", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
-                    { id: 4, name: "Anand Varma", email: "anand@coop.org", phone: "+919876543214", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
-                    { id: 5, name: "Sunita Devi", email: "sunita@coop.org", phone: "+919876543213", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
-                    { id: 6, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", phone: "+919676993028", role: "CUSTOMER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 2, name: "Priya Sharma", email: "priya@coop.org", phone: "+919876543215", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
+                    { id: 3, name: "Lakshmi Narayanan", email: "lakshmi@coop.org", phone: "+919876543211", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
+                    { id: 4, name: "Karthik Gowda", email: "karthik@coop.org", phone: "+919876543216", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 5, name: "Mohammed Rafiq", email: "rafiq@coop.org", phone: "+919876543212", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 6, name: "Suresh M.", email: "suresh@coop.org", phone: "+919876543217", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 7, name: "Anand Varma", email: "anand@coop.org", phone: "+919876543214", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 8, name: "Deepa Hegde", email: "deepa@coop.org", phone: "+919876543218", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
+                    { id: 9, name: "Sunita Devi", email: "sunita@coop.org", phone: "+919876543213", role: "WORKER", gender: "Female", status: "ACTIVE", password: "password123" },
+                    { id: 10, name: "Manjunath R.", email: "manjunath@coop.org", phone: "+919876543219", role: "WORKER", gender: "Male", status: "ACTIVE", password: "password123" },
+                    { id: 11, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", phone: "+919676993028", role: "CUSTOMER", gender: "Male", status: "ACTIVE", password: "password123" },
                     { id: 99, name: "Federation Administrator", email: "admin@coopserve.org", phone: "+919876500099", role: "ADMIN", gender: "Female", status: "ACTIVE", password: "admin" }
                 ];
                 this.set('users', defaultUsers);
 
                 const defaultWorkers = [
-                    { id: 1, user_id: 1, name: "Ramesh Kumar", experience_years: 8, description: "Senior Certified Master Electrician & Wireman with 8+ years expertise in residential & commercial circuitry.", service_area: "Koramangala, Bengaluru", hourly_rate: 499, primary_skill: "Electrical", verification_status: "VERIFIED", latitude: 12.9352, longitude: 77.6245, welfare_balance: 1450, avg_rating: 4.9, completed_jobs: 48 },
-                    { id: 2, user_id: 2, name: "Lakshmi Narayanan", experience_years: 6, description: "Master Plumber & Pipefitting specialist certified by Karnataka Labour Federation for leak repairs & sanitary fittings.", service_area: "Indiranagar, Bengaluru", hourly_rate: 399, primary_skill: "Plumbing", verification_status: "VERIFIED", latitude: 12.9784, longitude: 77.6408, welfare_balance: 980, avg_rating: 4.8, completed_jobs: 32 },
-                    { id: 3, user_id: 3, name: "Mohammed Rafiq", experience_years: 10, description: "Expert Woodwork & Modular Furniture Specialist with 10 yrs craftsmanship in bespoke fittings.", service_area: "Whitefield, Bengaluru", hourly_rate: 599, primary_skill: "Carpentry", verification_status: "VERIFIED", latitude: 12.9698, longitude: 77.7500, welfare_balance: 2100, avg_rating: 5.0, completed_jobs: 64 },
-                    { id: 4, user_id: 4, name: "Anand Varma", experience_years: 7, description: "Professional Wall Painting, Exterior Emulsion, Distemper, Waterproofing & Wood Polish Specialist.", service_area: "Jayanagar, Bengaluru", hourly_rate: 799, primary_skill: "Painting", verification_status: "VERIFIED", latitude: 12.9308, longitude: 77.5838, welfare_balance: 1650, avg_rating: 4.9, completed_jobs: 41 },
-                    { id: 5, user_id: 5, name: "Sunita Devi", experience_years: 5, description: "Professional Deep Sanitisation & Home Maintenance Team Leader with hospital-grade sanitisation equipment.", service_area: "HSR Layout, Bengaluru", hourly_rate: 699, primary_skill: "Cleaning", verification_status: "VERIFIED", latitude: 12.9121, longitude: 77.6446, welfare_balance: 850, avg_rating: 4.9, completed_jobs: 27 }
+                    { id: 1, user_id: 1, name: "Ramesh Kumar", experience_years: 8, description: "Senior Certified Master Electrician with 8+ years expertise in wiring, circuit breaker repairs & power backup.", service_area: "Koramangala, Bengaluru", hourly_rate: 499, primary_skill: "Electrical", verification_status: "VERIFIED", latitude: 12.9352, longitude: 77.6245, welfare_balance: 1450, avg_rating: 4.9, completed_jobs: 48 },
+                    { id: 2, user_id: 2, name: "Priya Sharma", experience_years: 5, description: "Licensed Electrical & Appliance Technician specializing in smart home fittings, LED panels & diagnostics.", service_area: "HSR Layout, Bengaluru", hourly_rate: 499, primary_skill: "Electrical", verification_status: "VERIFIED", latitude: 12.9150, longitude: 77.6380, welfare_balance: 1120, avg_rating: 4.8, completed_jobs: 36 },
+                    { id: 3, user_id: 3, name: "Lakshmi Narayanan", experience_years: 6, description: "Master Plumber & Pipefitting specialist certified by Karnataka Labour Federation for pipeline leak fixes & installations.", service_area: "Indiranagar, Bengaluru", hourly_rate: 399, primary_skill: "Plumbing", verification_status: "VERIFIED", latitude: 12.9784, longitude: 77.6408, welfare_balance: 980, avg_rating: 4.8, completed_jobs: 32 },
+                    { id: 4, user_id: 4, name: "Karthik Gowda", experience_years: 7, description: "Sanitary Pipeline & Hydro Pressure Specialist skilled in bathroom fixture overhauls and water pump repairs.", service_area: "BTM Layout, Bengaluru", hourly_rate: 399, primary_skill: "Plumbing", verification_status: "VERIFIED", latitude: 12.9165, longitude: 77.6101, welfare_balance: 1350, avg_rating: 4.9, completed_jobs: 45 },
+                    { id: 5, user_id: 5, name: "Mohammed Rafiq", experience_years: 10, description: "Expert Woodwork & Modular Furniture Specialist with 10 yrs craftsmanship in bespoke fittings & cabinets.", service_area: "Whitefield, Bengaluru", hourly_rate: 599, primary_skill: "Carpentry", verification_status: "VERIFIED", latitude: 12.9698, longitude: 77.7500, welfare_balance: 2100, avg_rating: 5.0, completed_jobs: 64 },
+                    { id: 6, user_id: 6, name: "Suresh M.", experience_years: 8, description: "Precision Timber Joinery & Door Lock Craftsman with extensive residential carpentry experience.", service_area: "Marathahalli, Bengaluru", hourly_rate: 599, primary_skill: "Carpentry", verification_status: "VERIFIED", latitude: 12.9591, longitude: 77.6974, welfare_balance: 1480, avg_rating: 4.9, completed_jobs: 39 },
+                    { id: 7, user_id: 7, name: "Anand Varma", experience_years: 7, description: "Professional Wall Painting, Exterior Emulsion, Distemper & Waterproofing Specialist.", service_area: "Jayanagar, Bengaluru", hourly_rate: 799, primary_skill: "Painting", verification_status: "VERIFIED", latitude: 12.9308, longitude: 77.5838, welfare_balance: 1650, avg_rating: 4.9, completed_jobs: 41 },
+                    { id: 8, user_id: 8, name: "Deepa Hegde", experience_years: 6, description: "Interior Wall Emulsion & Decorative Texture Painter skilled in damp-proofing and finishing coats.", service_area: "Malleshwaram, Bengaluru", hourly_rate: 799, primary_skill: "Painting", verification_status: "VERIFIED", latitude: 12.9982, longitude: 77.5714, welfare_balance: 1200, avg_rating: 4.8, completed_jobs: 29 },
+                    { id: 9, user_id: 9, name: "Sunita Devi", experience_years: 5, description: "Professional Deep Sanitisation & Home Maintenance Team Leader with advanced equipment.", service_area: "HSR Layout, Bengaluru", hourly_rate: 699, primary_skill: "Cleaning", verification_status: "VERIFIED", latitude: 12.9121, longitude: 77.6446, welfare_balance: 850, avg_rating: 4.9, completed_jobs: 27 },
+                    { id: 10, user_id: 10, name: "Manjunath R.", experience_years: 4, description: "Full House Deep Cleaning & Kitchen Degreasing Specialist certified in industrial hygiene.", service_area: "Electronic City, Bengaluru", hourly_rate: 699, primary_skill: "Cleaning", verification_status: "VERIFIED", latitude: 12.8452, longitude: 77.6602, welfare_balance: 720, avg_rating: 4.7, completed_jobs: 22 }
                 ];
                 this.set('worker_profiles', defaultWorkers);
 
@@ -3094,7 +3104,13 @@
 
         function matchesTradeCategory(w, category) {
             if (!category || category === 'ALL') return true;
+            
+            const target = category.trim().toLowerCase();
+            const primarySkill = (w.primary_skill || w.trade_category || '').trim().toLowerCase();
+            if (primarySkill === target) return true;
+
             const text = [
+                w.trade_category || '',
                 w.primary_skill || '',
                 w.skills || '',
                 w.service_name || '',
@@ -3102,32 +3118,43 @@
                 w.name || ''
             ].join(' ').toLowerCase();
 
-            const categoryKeywords = {
-                'electrical': ['electr', 'wireman', 'appliance', 'circuit', 'power', 'fuse'],
-                'plumbing': ['plumb', 'pipe', 'leak', 'drain', 'sanitary', 'faucet'],
-                'carpentry': ['carpent', 'wood', 'furniture', 'cabinet', 'door', 'fixture'],
-                'painting': ['paint', 'polish', 'whitewash', 'distemper', 'texture', 'wall'],
-                'cleaning': ['clean', 'sanit', 'maid', 'housekeep', 'wash', 'hygiene', 'sweep']
-            };
+            if (target === 'electrical') {
+                return text.includes('electr') || text.includes('wireman') || text.includes('wiring') || text.includes('circuit') || text.includes('appliance');
+            }
+            if (target === 'plumbing') {
+                return text.includes('plumb') || text.includes('pipe') || text.includes('leak') || text.includes('drain') || text.includes('faucet') || text.includes('tap');
+            }
+            if (target === 'carpentry') {
+                return text.includes('carpent') || text.includes('timber') || text.includes('woodwork') || text.includes('furniture') || text.includes('cabinet') || text.includes('door');
+            }
+            if (target === 'painting') {
+                return text.includes('paint') || text.includes('whitewash') || text.includes('distemper') || text.includes('texture') || text.includes('emulsion') || text.includes('wall paint');
+            }
+            if (target === 'cleaning') {
+                return text.includes('clean') || text.includes('deep clean') || text.includes('sanitis') || text.includes('sanitiz') || text.includes('housekeep') || text.includes('maid');
+            }
 
-            const targetKey = category.toLowerCase();
-            const keywords = categoryKeywords[targetKey] || [targetKey];
-            return keywords.some(k => text.includes(k));
+            return text.includes(target);
         }
 
         function filterTradeCategory(category) {
-            currentTradeFilter = category;
+            currentTradeFilter = category || 'ALL';
             const chips = ['ALL', 'Electrical', 'Plumbing', 'Carpentry', 'Painting', 'Cleaning'];
             chips.forEach(c => {
                 const btn = document.getElementById('cat-chip-' + c);
                 if (btn) {
-                    if (c === category) {
-                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition shrink-0 shadow-lg';
+                    if (c.toLowerCase() === currentTradeFilter.toLowerCase()) {
+                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition shrink-0 shadow-lg scale-105';
                     } else {
-                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition shrink-0';
+                        btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition shrink-0 hover:border-slate-700';
                     }
                 }
             });
+
+            if (!cachedWorkersList || cachedWorkersList.length === 0) {
+                cachedWorkersList = MockDB.get('worker_profiles', []);
+            }
+
             renderFilteredWorkers();
             loadNearbyRadarWorkers();
         }
@@ -3137,9 +3164,10 @@
             if (!container) return;
             container.innerHTML = '';
 
-            let filtered = cachedWorkersList;
+            let list = (cachedWorkersList && cachedWorkersList.length > 0) ? cachedWorkersList : MockDB.get('worker_profiles', []);
+            let filtered = list;
             if (currentTradeFilter !== 'ALL') {
-                filtered = cachedWorkersList.filter(w => matchesTradeCategory(w, currentTradeFilter));
+                filtered = list.filter(w => matchesTradeCategory(w, currentTradeFilter));
             }
 
             if (filtered.length > 0) {
@@ -4143,40 +4171,31 @@
         }
 
         // ================= CUSTOMER WORKER LIST & REQUESTS =================
-        function switchCustomerTab(tab) {
-            ['workers', 'map', 'requests'].forEach(t => {
-                const el = document.getElementById('cust-content-' + t);
-                const btn = document.getElementById('cust-tab-' + t);
-                if (el) el.classList.add('hidden');
-                if (btn) btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition flex items-center space-x-1.5';
-            });
-            const activeEl = document.getElementById('cust-content-' + tab);
-            const activeBtn = document.getElementById('cust-tab-' + tab);
-            if (activeEl) activeEl.classList.remove('hidden');
-            if (activeBtn) activeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-1.5 shadow';
-
-            if (tab === 'map') loadNearbyRadarWorkers();
-            else if (tab === 'requests') loadCustomerRequests();
-            else loadCustomerData();
-        }
-
         async function loadCustomerData() {
             try {
                 let url = '/api/workers';
-                if (currentUser && currentUser.gender) {
-                    url += `?gender=${encodeURIComponent(currentUser.gender)}`;
-                    document.getElementById('customer-gender-banner').textContent = `Customer Portal (${currentUser.gender} Verified &middot; Safety Matching Active)`;
-                } else {
-                    document.getElementById('customer-gender-banner').textContent = `Verified Trade Marketplace &middot; Guest Mode`;
+                const bannerEl = document.getElementById('customer-gender-banner');
+                if (bannerEl) {
+                    if (currentUser && currentUser.gender && currentUser.role === 'CUSTOMER') {
+                        bannerEl.textContent = `Customer Portal (${currentUser.gender} Verified &middot; Safety Matching Active)`;
+                    } else {
+                        bannerEl.textContent = `Verified Trade Marketplace &middot; Guest Mode`;
+                    }
                 }
 
                 const res = await fetch(url);
                 const json = await res.json();
-                if (json.success) {
-                    cachedWorkersList = json.data || [];
-                    renderFilteredWorkers();
+                if (json.success && json.data && json.data.length > 0) {
+                    cachedWorkersList = json.data;
+                } else {
+                    cachedWorkersList = MockDB.get('worker_profiles', []);
                 }
-            } catch (e) { console.error(e); }
+                renderFilteredWorkers();
+            } catch (e) {
+                console.warn('Fallback to local storage worker profiles:', e);
+                cachedWorkersList = MockDB.get('worker_profiles', []);
+                renderFilteredWorkers();
+            }
         }
 
         async function loadCustomerRequests() {
