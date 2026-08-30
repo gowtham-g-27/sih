@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoopServe — Worker Workspace & Dispatch</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coop: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        },
+                        slate: { 850: '#151f32', 950: '#0a0f1d' }
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], mono: ['Space Grotesk', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.4); border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-coop-500 selection:text-slate-950">
+
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-slate-950/90 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='index.html'">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-coop-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-coop-500/20">
+                    <i data-lucide="wrench" class="w-6 h-6 text-slate-950"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-coop-400 bg-clip-text text-transparent">CoopServe</span>
+                    <span class="block text-[10px] tracking-widest text-coop-400 uppercase font-mono font-semibold">Worker Workspace Portal</span>
+                </div>
+            </div>
+
+            <!-- Worker Header Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Multilingual Switcher -->
+                <select id="worker-lang" onchange="setWorkerLanguage(this.value)" class="bg-slate-900 border border-slate-800 hover:border-coop-500 text-slate-200 text-xs rounded-xl px-2.5 py-2 font-mono focus:outline-none cursor-pointer">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="te">🇮🇳 తెలుగు</option>
+                    <option value="hi">🇮🇳 हिन्दी</option>
+                    <option value="kn">🇮🇳 ಕನ್ನಡ</option>
+                    <option value="ta">🇮🇳 தமிழ்</option>
+                    <option value="mr">🇮🇳 मराठी</option>
+                </select>
+
+                <!-- Duty Toggle -->
+                <button id="duty-btn" onclick="toggleWorkerDuty()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition flex items-center space-x-1.5 shadow">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="duty-label">Active on Duty</span>
+                </button>
+
+                <!-- Return to Customer Portal -->
+                <a href="index.html" class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-coop-500 text-slate-300 hover:text-white text-xs font-bold transition flex items-center space-x-1.5">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5 text-coop-400"></i>
+                    <span class="hidden sm:inline">Customer View</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Worker Profile Header Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 rounded-2xl bg-coop-500/20 border-2 border-coop-500/50 flex items-center justify-center text-coop-400 font-extrabold text-2xl shadow-inner" id="worker-avatar">
+                    RK
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h2 class="text-xl font-bold text-white" id="worker-name">Ramesh Kumar</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-coop-500/20 text-coop-400 border border-coop-500/40 font-bold">🛡️ Federation Verified</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1" id="worker-skill">Senior Master Electrician &middot; Karnataka Labour Cooperative Society #104</p>
+                    <div class="flex items-center space-x-3 text-xs font-mono text-slate-500 mt-1.5">
+                        <span>📍 Koramangala, Bengaluru</span>
+                        <span>&bull;</span>
+                        <span class="text-amber-400 font-bold">⭐ 4.9 Rating (48 Jobs)</span>
+                        <span>&bull;</span>
+                        <span class="text-emerald-400 font-bold">₹499/hr Base</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action: File Welfare Claim -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openWelfareModal()" class="px-4 py-2.5 rounded-xl bg-coop-600 hover:bg-coop-500 text-slate-950 font-bold text-xs transition flex items-center space-x-1.5 shadow-lg shadow-coop-600/20">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>File Healthcare Claim</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4 Real-Time Worker KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2 relative overflow-hidden">
+                <div class="flex justify-between items-center text-slate-400 text-xs font-mono">
+                    <span>Direct Net Wages (80%)</span>
+                    <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-white font-mono" id="kpi-wages">₹24,850.00</div>
+                <p class="text-[10px] text-emerald-400 font-mono">Direct bank payout &bull; Zero commission cut</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2 relative overflow-hidden">
+                <div class="flex justify-between items-center text-slate-400 text-xs font-mono">
+                    <span>Society Welfare Fund (10%)</span>
+                    <i data-lucide="shield-plus" class="w-4 h-4 text-cyan-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-cyan-400 font-mono" id="kpi-welfare">₹3,450.00</div>
+                <p class="text-[10px] text-slate-400 font-mono">PMSBY Insurance Linked &bull; ₹2 Lakh Cover</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2 relative overflow-hidden">
+                <div class="flex justify-between items-center text-slate-400 text-xs font-mono">
+                    <span>Completed Orders</span>
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-coop-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-white font-mono" id="kpi-jobs">48 Orders</div>
+                <p class="text-[10px] text-slate-400 font-mono">100% on-time fulfillment rate</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2 relative overflow-hidden">
+                <div class="flex justify-between items-center text-slate-400 text-xs font-mono">
+                    <span>Cooperative Trust Rating</span>
+                    <i data-lucide="star" class="w-4 h-4 text-amber-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-amber-400 font-mono" id="kpi-rating">4.9 / 5.0</div>
+                <p class="text-[10px] text-slate-400 font-mono">Top 5% Federation Artisan Tier</p>
+            </div>
+        </div>
+
+        <!-- 4 Specialized Worker Workspace Tabs -->
+        <div class="space-y-6">
+            <div class="flex items-center space-x-2 border-b border-slate-800 pb-3 overflow-x-auto custom-scrollbar">
+                <button onclick="switchTab('orders')" id="tab-btn-orders" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-2 whitespace-nowrap shadow">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                    <span>⚡ Work Orders & Dispatch</span>
+                </button>
+                <button onclick="switchTab('welfare')" id="tab-btn-welfare" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white transition flex items-center space-x-2 whitespace-nowrap border border-slate-800">
+                    <i data-lucide="heart-pulse" class="w-4 h-4 text-rose-400"></i>
+                    <span>🏥 Welfare Passbook & Insurance</span>
+                </button>
+                <button onclick="switchTab('earnings')" id="tab-btn-earnings" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white transition flex items-center space-x-2 whitespace-nowrap border border-slate-800">
+                    <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
+                    <span>💰 80% Earnings Ledger</span>
+                </button>
+                <button onclick="switchTab('kyc')" id="tab-btn-kyc" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white transition flex items-center space-x-2 whitespace-nowrap border border-slate-800">
+                    <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+                    <span>🛡️ KYC & Skill Portfolio</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: Work Orders & Dispatch Queue -->
+            <div id="tab-content-orders" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="list-ordered" class="w-4 h-4 text-coop-400"></i>
+                        <span>Incoming Service Dispatches & Active Jobs</span>
+                    </h3>
+                    <button onclick="loadWorkerOrders()" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-coop-500 text-slate-300 text-xs font-mono transition">
+                        🔄 Refresh Queue
+                    </button>
+                </div>
+                <div id="orders-list" class="space-y-3">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Tab 2: Welfare Passbook & Insurance -->
+            <div id="tab-content-welfare" class="space-y-6 hidden">
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-5 h-5 text-cyan-400"></i>
+                                <span>PMSBY Labor Cooperative Group Insurance Policy</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Policy No: <strong>PMSBY-KA-2026-884920</strong> &bull; Total Accidental / Disability Cover: ₹2,00,000</p>
+                        </div>
+                        <button onclick="openWelfareModal()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl transition">
+                            + Submit Medical Expense Claim
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                            <span class="text-slate-400 text-xs block">Healthcare Fund Balance</span>
+                            <span class="text-xl font-bold text-cyan-400 font-mono mt-1 block" id="welfare-passbook-balance">₹3,450.00</span>
+                            <span class="text-[10px] text-slate-500">Auto-credited (10% on every job)</span>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                            <span class="text-slate-400 text-xs block">Approved Claims Disbursed</span>
+                            <span class="text-xl font-bold text-emerald-400 font-mono mt-1 block">₹1,200.00</span>
+                            <span class="text-[10px] text-slate-500">Directly settled to Bank Account</span>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                            <span class="text-slate-400 text-xs block">Insurance Scheme Status</span>
+                            <span class="text-xl font-bold text-coop-400 font-mono mt-1 block">ACTIVE (100%)</span>
+                            <span class="text-[10px] text-slate-500">Renewed by Federation Fund</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Earnings & 80% Payout Ledger -->
+            <div id="tab-content-earnings" class="space-y-6 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="coins" class="w-5 h-5 text-emerald-400"></i>
+                                <span>Direct 80% Wage Disbursement Settlements</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Direct Bank Payouts with GST Tax Invoices and Transparent Escrow Split</p>
+                        </div>
+                        <button onclick="exportWorkerLedger()" class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-coop-500 text-xs text-coop-400 font-mono font-bold transition flex items-center space-x-1.5">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Export Earnings (CSV)</span>
+                        </button>
+                    </div>
+
+                    <div id="earnings-table" class="space-y-3">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: KYC & Skill Portfolio -->
+            <div id="tab-content-kyc" class="space-y-6 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2 border-b border-slate-800 pb-4">
+                        <i data-lucide="badge-check" class="w-5 h-5 text-coop-400"></i>
+                        <span>Government & Federation Verification Credentials</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-emerald-500/30 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-white">Aadhaar Card KYC</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">VERIFIED</span>
+                            </div>
+                            <p class="text-xs text-slate-400 font-mono">UIDAI: XXXX-XXXX-4920</p>
+                            <p class="text-[10px] text-slate-500">Biometric & Address authenticated</p>
+                        </div>
+
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-emerald-500/30 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-white">Trade License & Certification</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">ACTIVE</span>
+                            </div>
+                            <p class="text-xs text-slate-400 font-mono">NCVT Master Wireman #EL-2018-91</p>
+                            <p class="text-[10px] text-slate-500">Skill India Certified Level 5</p>
+                        </div>
+
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-emerald-500/30 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-white">Primary Cooperative Society</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">MEMBER</span>
+                            </div>
+                            <p class="text-xs text-slate-400 font-mono">Bangalore South Artisans Coop #104</p>
+                            <p class="text-[10px] text-slate-500">Dividend & Voting Shareholder</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Welfare Claim Modal -->
+    <div id="worker-welfare-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full mx-4 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-base">File Healthcare & Welfare Claim</h3>
+                <button onclick="closeWelfareModal()" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <form onsubmit="submitWelfareClaim(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1">Claim Category</label>
+                    <select id="w-claim-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                        <option value="HEALTHCARE">Medical Prescription / OPD Consultation</option>
+                        <option value="HOSPITALIZATION">Hospitalization & Diagnostic Tests</option>
+                        <option value="ACCIDENT">Accidental Disability Coverage</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">Claim Amount (₹)</label>
+                    <input type="number" id="w-claim-amt" required min="100" max="50000" placeholder="e.g. 1500" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">Medical Description & Hospital/Clinic</label>
+                    <textarea id="w-claim-desc" required rows="3" placeholder="Describe medical treatment or doctor diagnosis..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-coop-600 hover:bg-coop-500 text-slate-950 font-bold text-xs transition">Submit Claim for Federation Approval</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const MockDB = {
+            get(k, d) {
+                try {
+                    const v = localStorage.getItem('coopserve_' + k);
+                    return v ? JSON.parse(v) : d;
+                } catch(e) { return d; }
+            },
+            set(k, v) {
+                try { localStorage.setItem('coopserve_' + k, JSON.stringify(v)); } catch(e) {}
+            }
+        };
+
+        let currentTab = 'orders';
+        let isDutyActive = true;
+        let workerLang = 'en';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            ['orders', 'welfare', 'earnings', 'kyc'].forEach(t => {
+                const el = document.getElementById('tab-content-' + t);
+                const btn = document.getElementById('tab-btn-' + t);
+                if (el) el.classList.add('hidden');
+                if (btn) btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 hover:text-white transition flex items-center space-x-2 whitespace-nowrap border border-slate-800';
+            });
+
+            const activeEl = document.getElementById('tab-content-' + tab);
+            const activeBtn = document.getElementById('tab-btn-' + tab);
+            if (activeEl) activeEl.classList.remove('hidden');
+            if (activeBtn) activeBtn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-2 whitespace-nowrap shadow';
+            
+            lucide.createIcons();
+            if (tab === 'orders') loadWorkerOrders();
+            if (tab === 'earnings') loadWorkerEarnings();
+        }
+
+        function toggleWorkerDuty() {
+            isDutyActive = !isDutyActive;
+            const btn = document.getElementById('duty-btn');
+            const lbl = document.getElementById('duty-label');
+            if (isDutyActive) {
+                btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition flex items-center space-x-1.5 shadow';
+                lbl.textContent = 'Active on Duty';
+                showToast('On Duty 🟢', 'You are now visible on customer proximity radars.');
+            } else {
+                btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition flex items-center space-x-1.5 shadow';
+                lbl.textContent = 'On Break (Paused)';
+                showToast('Break Mode ⏸️', 'Dispatch queue paused.');
+            }
+        }
+
+        function loadWorkerOrders() {
+            const container = document.getElementById('orders-list');
+            if (!container) return;
+            const reqs = MockDB.get('requests', []);
+            container.innerHTML = '';
+
+            if (reqs.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 rounded-2xl border border-slate-800">No active work orders dispatched. Ensure your duty status is active!</div>';
+                return;
+            }
+
+            reqs.forEach(r => {
+                const isEmergency = r.service_name && r.service_name.includes('EMERGENCY');
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r.location || 'Bengaluru')}`;
+
+                container.innerHTML += `
+                    <div class="bg-slate-900 border ${isEmergency ? 'border-rose-500/50 bg-rose-950/10' : 'border-slate-800'} p-5 rounded-2xl space-y-4 hover:border-coop-500/50 transition">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-mono text-coop-400 font-bold text-xs">#REQ-${r.id}</span>
+                                    <span class="text-xs font-bold text-white">${r.service_name}</span>
+                                    ${isEmergency ? '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[10px] font-bold">🚨 SOS Priority</span>' : ''}
+                                </div>
+                                <p class="text-xs text-slate-400 mt-1">Customer: <strong>${r.customer_name || 'Citizen'}</strong> &bull; Location: <strong>${r.location}</strong></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-emerald-400 font-mono block">Gross: ₹${r.final_bill || 499}</span>
+                                <span class="text-[10px] text-coop-400 font-mono">Your Direct 80%: ₹${((r.final_bill || 499) * 0.8).toFixed(2)}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800/80">
+                            <button onclick="speakOrder('${r.service_name}', '${r.customer_name || 'Citizen'}', '${r.location}')" class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-coop-500 text-slate-300 text-xs font-mono transition flex items-center space-x-1">
+                                <span>🔊 Voice Listen</span>
+                            </button>
+                            <a href="${gmapsLink}" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-coop-500 text-sky-400 text-xs font-mono transition flex items-center space-x-1">
+                                <span>🗺️ Google Maps Directions</span>
+                            </a>
+                            <button onclick="updateJobStage(${r.id}, 'EN_ROUTE')" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 text-xs font-bold transition">
+                                En Route 🚗
+                            </button>
+                            <button onclick="updateJobStage(${r.id}, 'COMPLETED')" class="px-3 py-1.5 rounded-lg bg-coop-600 hover:bg-coop-500 text-slate-950 text-xs font-bold transition">
+                                Complete Job ✅
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function speakOrder(service, customer, location) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const text = `New work order. Service: ${service}. Customer: ${customer}. Location: ${location}. Please proceed immediately.`;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.95;
+                if (workerLang === 'te') utterance.lang = 'te-IN';
+                else if (workerLang === 'hi') utterance.lang = 'hi-IN';
+                else if (workerLang === 'kn') utterance.lang = 'kn-IN';
+                else if (workerLang === 'ta') utterance.lang = 'ta-IN';
+                else if (workerLang === 'mr') utterance.lang = 'mr-IN';
+                else utterance.lang = 'en-IN';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function updateJobStage(reqId, status) {
+            const reqs = MockDB.get('requests', []);
+            const r = reqs.find(item => item.id == reqId);
+            if (r) {
+                r.status = status;
+                MockDB.set('requests', reqs);
+                showToast('Status Updated', `Job #${reqId} is now ${status}`);
+                loadWorkerOrders();
+            }
+        }
+
+        function loadWorkerEarnings() {
+            const container = document.getElementById('earnings-table');
+            if (!container) return;
+            const payments = MockDB.get('payments', []);
+            container.innerHTML = '';
+
+            payments.forEach(p => {
+                container.innerHTML += `
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-mono text-coop-400 font-bold">${p.transaction_id}</span>
+                            <h5 class="text-xs font-bold text-white">${p.service_name}</h5>
+                            <span class="text-[10px] text-slate-500 font-mono">${new Date(p.created_at || Date.now()).toLocaleDateString()}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-emerald-400 font-mono">₹${Number(p.worker_share || 399.2).toFixed(2)} (80%)</span>
+                            <span class="text-[10px] text-cyan-400 block font-mono">+₹${Number(p.society_welfare_share || 49.9).toFixed(2)} Welfare Fund</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function exportWorkerLedger() {
+            const payments = MockDB.get('payments', []);
+            let csv = 'Txn_ID,Service,Date,Gross,Worker_Share_80pct,Welfare_10pct\n';
+            payments.forEach(p => {
+                csv += `"${p.transaction_id}","${p.service_name}","${p.created_at}",${p.amount},${p.worker_share},${p.society_welfare_share}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `worker_earnings_${Date.now()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Export Successful 📊', 'Downloaded Earnings CSV');
+        }
+
+        function openWelfareModal() { document.getElementById('worker-welfare-modal').classList.remove('hidden'); }
+        function closeWelfareModal() { document.getElementById('worker-welfare-modal').classList.add('hidden'); }
+
+        function submitWelfareClaim(e) {
+            e.preventDefault();
+            const type = document.getElementById('w-claim-type').value;
+            const amt = document.getElementById('w-claim-amt').value;
+            const desc = document.getElementById('w-claim-desc').value;
+            
+            const claims = MockDB.get('welfare_claims', []);
+            claims.unshift({
+                id: Date.now(),
+                worker_id: 1,
+                worker_name: 'Ramesh Kumar',
+                claim_type: type,
+                amount: Number(amt),
+                description: desc,
+                status: 'APPROVED',
+                created_at: new Date().toISOString()
+            });
+            MockDB.set('welfare_claims', claims);
+            closeWelfareModal();
+            showToast('Claim Submitted ✅', `₹${amt} claim sent to Federation for direct credit.`);
+        }
+
+        function setWorkerLanguage(lang) {
+            workerLang = lang;
+            showToast('Language Updated 🌐', `Switched speech to ${lang}`);
+        }
+
+        function showToast(title, msg) {
+            alert(title + '\n' + msg);
+        }
+
+        // Initialize on load
+        loadWorkerOrders();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
