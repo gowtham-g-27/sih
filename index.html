@@ -2258,7 +2258,7 @@
                 return mockResponse({ success: true, message: 'Rating submitted successfully' });
             }
 
-            if (path === '/api/complaints' && method === 'POST') {
+            if ((path === '/api/complaints' || path === '/api/disputes') && method === 'POST') {
                 const disputes = MockDB.get('disputes', []);
                 const newDisp = {
                     id: Date.now(),
@@ -2273,7 +2273,20 @@
                 };
                 disputes.unshift(newDisp);
                 MockDB.set('disputes', disputes);
-                return mockResponse({ success: true, message: 'Grievance submitted' });
+                return mockResponse({ success: true, message: 'Grievance registered for federation mediation', data: newDisp });
+            }
+
+            if (path.match(/\/api\/disputes\/\d+\/resolve/) && method === 'PUT') {
+                const parts = path.split('/');
+                const disputeId = Number(parts[3]);
+                const disputes = MockDB.get('disputes', []);
+                const disp = disputes.find(d => d.id == disputeId);
+                if (disp) {
+                    disp.status = 'RESOLVED';
+                    disp.resolution_notes = body.notes || 'Reconciled by Federation Mediator';
+                    MockDB.set('disputes', disputes);
+                }
+                return mockResponse({ success: true, message: 'Dispute resolved successfully' });
             }
 
             // 10. Admin Reports & Analytics
@@ -2886,8 +2899,51 @@
         }
 
         function exportCSV(type) {
+            try {
+                let csvContent = '';
+                let filename = `coopserve_${type}_${Date.now()}.csv`;
+
+                if (type === 'wage-splits' || type === 'wage_splits') {
+                    const payments = MockDB.get('payments', []);
+                    csvContent = 'Txn_ID,Date,Customer,Worker,Service,Gross_Amount,Worker_80pct,Welfare_10pct,Federation_5pct,Platform_5pct,Status\n';
+                    payments.forEach(p => {
+                        csvContent += `"${p.transaction_id || 'TXN-COOP'}","${p.created_at || ''}","${p.customer_name || 'Customer'}","${p.worker_name || 'Worker'}","${p.service_name || 'Service'}",${p.amount || 499},${p.worker_share || 399.2},${p.society_welfare_share || 49.9},${p.federation_share || 24.95},${p.platform_fee || 24.95},"${p.status || 'COMPLETED'}"\n`;
+                    });
+                } else if (type === 'worker-utilization' || type === 'utilization') {
+                    const workers = MockDB.get('worker_profiles', []);
+                    csvContent = 'Worker_ID,Worker_Name,Primary_Skill,Experience_Years,Hourly_Rate,Rating,Completed_Jobs,Status\n';
+                    workers.forEach(w => {
+                        csvContent += `"${w.id}","${w.name}","${w.primary_skill || 'Skilled'}",${w.experience_years || 5},${w.hourly_rate || 499},${w.avg_rating || 4.9},${w.completed_jobs || 12},"${w.verification_status || 'VERIFIED'}"\n`;
+                    });
+                } else if (type === 'disputes') {
+                    const disputes = MockDB.get('disputes', []);
+                    csvContent = 'Dispute_ID,Request_ID,Complainant,Role,Type,Description,Status,Resolution_Notes,Date\n';
+                    disputes.forEach(d => {
+                        csvContent += `"${d.id}","${d.service_request_id || ''}","${d.complainant_name || ''}","${d.complainant_role || ''}","${d.type || 'General'}","${d.description || ''}","${d.status || 'OPEN'}","${d.resolution_notes || ''}","${d.created_at || ''}"\n`;
+                    });
+                }
+
+                if (csvContent) {
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', filename);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showToast('Export Successful 📊', `Downloaded ${filename}`);
+                    return;
+                }
+            } catch(e) {
+                console.warn('Client CSV fallback failed:', e);
+            }
             window.location.href = `/api/admin/reports/export/${type}`;
             showToast('Export Initiated', `Downloading ${type} CSV report...`);
+        }
+
+        function downloadInvoice(transactionId) {
+            openInvoiceModal(transactionId);
         }
 
         // ================= INVOICE & RECEIPT MODAL =================
