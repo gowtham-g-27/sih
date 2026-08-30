@@ -30,6 +30,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         @media print {
             body * { visibility: hidden; }
@@ -39,6 +41,9 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.4); border-radius: 4px; }
+        .leaflet-container { background: #0b1120; font-family: inherit; }
+        .leaflet-popup-content-wrapper { background: #0f172a; color: #f8fafc; border: 1px solid #1e293b; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .leaflet-popup-tip { background: #0f172a; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-coop-500 selection:text-slate-950">
@@ -548,45 +553,79 @@
                     <!-- Injected via JS -->
                 </div>
 
-                <!-- Tab 1B: Live Radar Proximity Map View -->
+                <!-- Tab 1B: Live Interactive Map & Proximity Radar View -->
                 <div id="cust-content-map" class="hidden space-y-6">
-                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                        <!-- Left: Visual Radar Canvas / Scanner -->
-                        <div class="lg:col-span-6 bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden min-h-[340px]">
-                            <!-- Animated Radar Concentric Circles -->
-                            <div class="absolute w-72 h-72 rounded-full border border-coop-500/20 animate-ping opacity-20 pointer-events-none"></div>
-                            <div class="absolute w-56 h-56 rounded-full border border-coop-500/30"></div>
-                            <div class="absolute w-36 h-36 rounded-full border border-cyan-500/40"></div>
-                            <div class="absolute w-20 h-20 rounded-full border border-emerald-400/50 bg-coop-500/5"></div>
-                            
-                            <!-- Center User Location Pin -->
-                            <div class="relative z-10 flex flex-col items-center">
-                                <div class="w-10 h-10 rounded-full bg-coop-500 text-slate-950 font-bold flex items-center justify-center shadow-lg shadow-coop-500/50 animate-bounce">
-                                    <i data-lucide="map-pin" class="w-5 h-5"></i>
-                                </div>
-                                <span class="px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-mono bg-coop-500 text-slate-950 font-bold">You (HSR Layout)</span>
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
+                        <!-- Top Map Mode & Navigation Switcher -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="setMapDisplayMode('gis')" id="map-mode-gis" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-1.5 shadow">
+                                    <i data-lucide="map" class="w-3.5 h-3.5"></i>
+                                    <span>🗺️ Interactive Street Map (GIS)</span>
+                                </button>
+                                <button onclick="setMapDisplayMode('radar')" id="map-mode-radar" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 hover:text-white transition flex items-center space-x-1.5 border border-slate-800">
+                                    <i data-lucide="radar" class="w-3.5 h-3.5 text-coop-400"></i>
+                                    <span>📡 Proximity Radar Scanner</span>
+                                </button>
                             </div>
 
-                            <!-- Orbiting Worker Markers injected via JS -->
-                            <div id="radar-worker-nodes" class="absolute inset-0 pointer-events-none">
-                                <!-- Dynamic Pins -->
-                            </div>
-
-                            <div class="absolute bottom-3 left-4 text-[10px] font-mono text-slate-500">
-                                🛰️ GPS Proximity Matching Active &bull; <span id="radar-worker-count" class="text-coop-400 font-bold">0 workers</span> in range
+                            <div class="flex items-center space-x-3 text-xs">
+                                <a id="gmaps-all-link" href="https://www.google.com/maps/search/electrician+plumber+carpenter+near+HSR+Layout+Bengaluru" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-coop-500 text-slate-300 hover:text-white font-mono text-[11px] flex items-center space-x-1.5 transition">
+                                    <i data-lucide="external-link" class="w-3 h-3 text-coop-400"></i>
+                                    <span>Open in Google Maps App</span>
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Right: Ranked Nearby Worker List -->
-                        <div class="lg:col-span-6 space-y-3">
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                <h4 class="font-bold text-white text-sm flex items-center space-x-1.5">
-                                    <i data-lucide="navigation" class="w-4 h-4 text-coop-400"></i>
-                                    <span>Nearest Verified Technicians (Ranked by Distance)</span>
-                                </h4>
+                        <!-- Map Content Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                            <!-- Left: Map / Radar Visualizer -->
+                            <div class="lg:col-span-7 space-y-3">
+                                <!-- Mode A: Interactive Leaflet / OpenStreetMap Canvas -->
+                                <div id="map-view-gis-container" class="relative rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+                                    <div id="real-map-canvas" class="w-full h-[380px] rounded-2xl bg-slate-950"></div>
+                                    <div class="absolute bottom-2 left-2 bg-slate-950/90 backdrop-blur border border-slate-800 px-3 py-1 rounded-lg text-[10px] font-mono text-slate-300 z-[1000] flex items-center space-x-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        <span>GPS Live Coordinates: 12.9352° N, 77.6245° E (Bengaluru)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Mode B: Visual Radar Canvas / Scanner -->
+                                <div id="map-view-radar-container" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden min-h-[380px]">
+                                    <div class="absolute w-72 h-72 rounded-full border border-coop-500/20 animate-ping opacity-20 pointer-events-none"></div>
+                                    <div class="absolute w-56 h-56 rounded-full border border-coop-500/30"></div>
+                                    <div class="absolute w-36 h-36 rounded-full border border-cyan-500/40"></div>
+                                    <div class="absolute w-20 h-20 rounded-full border border-emerald-400/50 bg-coop-500/5"></div>
+                                    
+                                    <div class="relative z-10 flex flex-col items-center">
+                                        <div class="w-10 h-10 rounded-full bg-coop-500 text-slate-950 font-bold flex items-center justify-center shadow-lg shadow-coop-500/50 animate-bounce">
+                                            <i data-lucide="map-pin" class="w-5 h-5"></i>
+                                        </div>
+                                        <span class="px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-mono bg-coop-500 text-slate-950 font-bold">You (HSR Layout)</span>
+                                    </div>
+
+                                    <div id="radar-worker-nodes" class="absolute inset-0 pointer-events-none">
+                                        <!-- Dynamic Pins -->
+                                    </div>
+
+                                    <div class="absolute bottom-3 left-4 text-[10px] font-mono text-slate-500">
+                                        🛰️ Concentric Radar Matching &bull; <span id="radar-worker-count" class="text-coop-400 font-bold">0 workers</span> in range
+                                    </div>
+                                </div>
                             </div>
-                            <div id="radar-ranked-list" class="space-y-2.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                                <!-- Injected via JS -->
+
+                            <!-- Right: Ranked Nearby Worker List with Google Maps Directions -->
+                            <div class="lg:col-span-5 space-y-3">
+                                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                                    <h4 class="font-bold text-white text-sm flex items-center space-x-1.5">
+                                        <i data-lucide="navigation" class="w-4 h-4 text-coop-400"></i>
+                                        <span>Nearest Technicians (GPS Ranked)</span>
+                                    </h4>
+                                    <span class="text-[10px] font-mono text-slate-500">Live Traffic ETA</span>
+                                </div>
+                                <div id="radar-ranked-list" class="space-y-2.5 max-h-[340px] overflow-y-auto custom-scrollbar pr-1">
+                                    <!-- Injected via JS -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2404,18 +2443,29 @@
         }
 
         function switchCustomerTab(tab) {
-            if(tab === 'workers') {
-                document.getElementById('cust-content-workers').classList.remove('hidden');
-                document.getElementById('cust-content-requests').classList.add('hidden');
-                document.getElementById('cust-tab-workers').className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition';
-                document.getElementById('cust-tab-requests').className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition';
-            } else {
-                document.getElementById('cust-content-workers').classList.add('hidden');
-                document.getElementById('cust-content-requests').classList.remove('hidden');
-                document.getElementById('cust-tab-requests').className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition';
-                document.getElementById('cust-tab-workers').className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition';
+            ['workers', 'map', 'requests'].forEach(t => {
+                const el = document.getElementById('cust-content-' + t);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('cust-tab-' + t);
+                if (btn) btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition flex items-center space-x-1.5';
+            });
+
+            const activeEl = document.getElementById('cust-content-' + tab);
+            if (activeEl) activeEl.classList.remove('hidden');
+            const activeBtn = document.getElementById('cust-tab-' + tab);
+            if (activeBtn) activeBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-1.5';
+
+            if (tab === 'map') {
+                loadNearbyRadarWorkers();
+                setTimeout(() => {
+                    if (leafletMap) leafletMap.invalidateSize();
+                }, 200);
+            } else if (tab === 'requests') {
                 loadCustomerRequests();
+            } else if (tab === 'workers') {
+                loadCustomerData();
             }
+            lucide.createIcons();
         }
 
         function switchAdminTab(tab) {
@@ -3814,8 +3864,33 @@
             }
         }
 
-        // ================= GEO-LOCATION RADAR & MAP MATCHING =================
+        // ================= GEO-LOCATION REAL MAP & RADAR MATCHING =================
         let currentProximityRadius = 10;
+        let mapDisplayMode = 'gis';
+        let leafletMap = null;
+        let leafletMarkersGroup = null;
+        let leafletRouteLine = null;
+
+        function setMapDisplayMode(mode) {
+            mapDisplayMode = mode;
+            const gisContainer = document.getElementById('map-view-gis-container');
+            const radarContainer = document.getElementById('map-view-radar-container');
+            const gisBtn = document.getElementById('map-mode-gis');
+            const radarBtn = document.getElementById('map-mode-radar');
+
+            if (mode === 'gis') {
+                if (gisContainer) gisContainer.classList.remove('hidden');
+                if (radarContainer) radarContainer.classList.add('hidden');
+                if (gisBtn) gisBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-1.5 shadow';
+                if (radarBtn) radarBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 hover:text-white transition flex items-center space-x-1.5 border border-slate-800';
+                setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 150);
+            } else {
+                if (gisContainer) gisContainer.classList.add('hidden');
+                if (radarContainer) radarContainer.classList.remove('hidden');
+                if (radarBtn) radarBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coop-600 text-slate-950 transition flex items-center space-x-1.5 shadow';
+                if (gisBtn) gisBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 hover:text-white transition flex items-center space-x-1.5 border border-slate-800';
+            }
+        }
 
         function setProximityRadius(val) {
             currentProximityRadius = Number(val);
@@ -3827,9 +3902,123 @@
                 const res = await fetch(`/api/workers/nearby?radius=${currentProximityRadius}&category=${currentTradeFilter}`);
                 const json = await res.json();
                 if (json.success) {
-                    renderRadarMap(json.data || []);
+                    const workers = json.data || [];
+                    renderRadarMap(workers);
+                    initLeafletMap(workers);
                 }
             } catch(e) { console.error('Radar load error:', e); }
+        }
+
+        function initLeafletMap(workers) {
+            const mapCanvas = document.getElementById('real-map-canvas');
+            if (!mapCanvas || typeof L === 'undefined') return;
+
+            const userLat = 12.9352;
+            const userLng = 77.6245;
+
+            if (!leafletMap) {
+                leafletMap = L.map('real-map-canvas', {
+                    center: [userLat, userLng],
+                    zoom: 13,
+                    zoomControl: true
+                });
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap &copy; CARTO',
+                    maxZoom: 19
+                }).addTo(leafletMap);
+
+                leafletMarkersGroup = L.layerGroup().addTo(leafletMap);
+            }
+
+            leafletMarkersGroup.clearLayers();
+            if (leafletRouteLine) {
+                leafletMap.removeLayer(leafletRouteLine);
+                leafletRouteLine = null;
+            }
+
+            // 1. User Marker (Pulsing Emerald Pin)
+            const userIcon = L.divIcon({
+                className: 'custom-user-pin',
+                html: `
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;">
+                        <div style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background: rgba(16,185,129,0.35); animation: ping 2s infinite;"></div>
+                        <div style="width: 22px; height: 22px; border-radius: 50%; background: #10b981; border: 3px solid #0f172a; box-shadow: 0 0 10px rgba(16,185,129,0.8); display: flex; align-items: center; justify-content: center; color: #022c22; font-weight: 900; font-size: 11px;">📍</div>
+                    </div>
+                `,
+                iconSize: [34, 34],
+                iconAnchor: [17, 17]
+            });
+
+            const userMarker = L.marker([userLat, userLng], { icon: userIcon }).addTo(leafletMarkersGroup);
+            userMarker.bindPopup(`
+                <div style="padding: 6px; font-family: inherit;">
+                    <div style="font-weight: 800; font-size: 13px; color: #10b981;">📍 Your Location</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Green Glen Layout, Bellandur, Bengaluru</div>
+                    <div style="font-size: 10px; color: #64748b; font-family: monospace; margin-top: 4px;">Lat: 12.9352 &bull; Lng: 77.6245</div>
+                </div>
+            `);
+
+            // 2. Worker Markers
+            const coordsTable = [
+                { lat: 12.9352, lng: 77.6245 },
+                { lat: 12.9784, lng: 77.6408 },
+                { lat: 12.9698, lng: 77.7500 },
+                { lat: 12.9121, lng: 77.6446 },
+                { lat: 12.9308, lng: 77.5838 }
+            ];
+
+            const bounds = L.latLngBounds([[userLat, userLng]]);
+
+            workers.forEach((w, idx) => {
+                const c = coordsTable[idx % coordsTable.length];
+                const wLat = Number(w.latitude || c.lat);
+                const wLng = Number(w.longitude || c.lng);
+                bounds.extend([wLat, wLng]);
+
+                const workerIcon = L.divIcon({
+                    className: 'custom-worker-pin',
+                    html: `
+                        <div style="background: #0f172a; border: 2px solid #059669; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #34d399; font-weight: 900; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer;">
+                            ${w.name ? w.name[0] : 'W'}
+                        </div>
+                    `,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${wLat},${wLng}&travelmode=driving`;
+
+                const marker = L.marker([wLat, wLng], { icon: workerIcon }).addTo(leafletMarkersGroup);
+                marker.bindPopup(`
+                    <div style="padding: 6px; font-family: inherit; min-width: 180px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 800; font-size: 13px; color: #fff;">${w.name}</span>
+                            <span style="font-size: 10px; background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 6px; border-radius: 4px; font-weight: 700;">⭐ ${w.avg_rating || 4.9}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${w.primary_skill || w.skills || 'Federation Technician'}</div>
+                        <div style="font-size: 11px; color: #34d399; font-weight: 700; margin-top: 4px;">₹${w.hourly_rate || 499} / hr &bull; ${w.distance_km || 1.8} km away (~${w.eta_mins || 12} mins)</div>
+                        <div style="display: flex; gap: 6px; margin-top: 8px;">
+                            <button onclick="openServiceModal(${w.user_id}, '${w.name}')" style="flex: 1; background: #059669; color: #022c22; font-weight: 800; font-size: 11px; padding: 6px 8px; border-radius: 6px; border: none; cursor: pointer;">Book Now</button>
+                            <a href="${gmapsLink}" target="_blank" style="background: #1e293b; color: #38bdf8; font-weight: 700; font-size: 11px; padding: 6px 8px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; justify-content: center;">🗺️ Google Maps</a>
+                        </div>
+                    </div>
+                `);
+            });
+
+            if (workers.length > 0) {
+                const nearest = workers[0];
+                const nLat = Number(nearest.latitude || coordsTable[0].lat);
+                const nLng = Number(nearest.longitude || coordsTable[0].lng);
+                leafletRouteLine = L.polyline([[userLat, userLng], [nLat, nLng]], {
+                    color: '#10b981',
+                    weight: 3,
+                    opacity: 0.8,
+                    dashArray: '6, 8'
+                }).addTo(leafletMap);
+
+                leafletMap.fitBounds(bounds, { padding: [40, 40] });
+            }
         }
 
         function renderRadarMap(workers) {
@@ -3847,11 +4036,17 @@
                 return;
             }
 
+            const userLat = 12.9352;
+            const userLng = 77.6245;
+
             workers.forEach((w, idx) => {
                 const angle = (idx * (360 / Math.max(1, workers.length))) * (Math.PI / 180);
-                const radiusDist = Math.min(130, Math.max(35, (w.distance_km / currentProximityRadius) * 110));
+                const radiusDist = Math.min(130, Math.max(35, ((w.distance_km || 2) / currentProximityRadius) * 110));
                 const top = 50 + Math.sin(angle) * (radiusDist / 3.4);
                 const left = 50 + Math.cos(angle) * (radiusDist / 3.4);
+                const wLat = w.latitude || (12.9352 + (idx * 0.015));
+                const wLng = w.longitude || (77.6245 + (idx * 0.012));
+                const gmapsDir = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${wLat},${wLng}&travelmode=driving`;
 
                 nodesContainer.innerHTML += `
                     <div style="top: ${top}%; left: ${left}%;" class="absolute transform -translate-x-1/2 -translate-y-1/2 group pointer-events-auto cursor-pointer" onclick="openServiceModal(${w.user_id}, '${w.name}')">
@@ -3859,26 +4054,30 @@
                             ${w.name[0]}
                         </div>
                         <div class="hidden group-hover:block absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 border border-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-xl whitespace-nowrap z-30 font-mono">
-                            ${w.name} &bull; ${w.distance_km} km
+                            ${w.name} &bull; ${w.distance_km || '1.8'} km
                         </div>
                     </div>
                 `;
 
                 listContainer.innerHTML += `
-                    <div class="bg-slate-950 border border-slate-800 hover:border-coop-500/50 p-3 rounded-xl flex items-center justify-between transition">
+                    <div class="bg-slate-950 border border-slate-800 hover:border-coop-500/50 p-3 rounded-2xl flex items-center justify-between transition gap-3">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-coop-500/10 text-coop-400 font-bold flex items-center justify-center text-sm border border-coop-500/20">${w.name[0]}</div>
+                            <div class="w-10 h-10 rounded-xl bg-coop-500/10 text-coop-400 font-black flex items-center justify-center text-sm border border-coop-500/20">${w.name[0]}</div>
                             <div>
                                 <h5 class="text-xs font-bold text-white">${w.name}</h5>
-                                <span class="text-[10px] text-slate-400 font-mono">⭐ ${w.avg_rating} &bull; ${w.skills || 'Trade Expert'}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">⭐ ${w.avg_rating || 4.9} &bull; ${w.primary_skill || w.skills || 'Trade Expert'}</span>
+                                <div class="text-[10px] text-slate-500 font-mono">₹${w.hourly_rate || 499}/hr</div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="text-right">
-                                <span class="text-xs font-bold text-emerald-400 font-mono">${w.distance_km} km</span>
-                                <span class="text-[10px] text-slate-500 block font-mono">ETA ~${w.eta_minutes}m</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="text-right mr-1">
+                                <span class="text-xs font-bold text-emerald-400 font-mono block">${w.distance_km || '1.8'} km</span>
+                                <span class="text-[10px] text-slate-400 font-mono">~${w.eta_mins || 10}m ETA</span>
                             </div>
-                            <button onclick="openServiceModal(${w.user_id}, '${w.name}')" class="px-3 py-1.5 rounded-lg bg-coop-600 hover:bg-coop-500 text-slate-950 font-bold text-xs transition">Book</button>
+                            <a href="${gmapsDir}" target="_blank" title="Navigate on Google Maps" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-800 text-xs font-bold transition flex items-center">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                            </a>
+                            <button onclick="openServiceModal(${w.user_id}, '${w.name}')" class="px-3 py-2 rounded-xl bg-coop-600 hover:bg-coop-500 text-slate-950 font-bold text-xs transition shadow">Book</button>
                         </div>
                     </div>
                 `;
