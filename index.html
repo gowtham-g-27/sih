@@ -2086,20 +2086,28 @@
             // 4. Service Requests (Create, Emergency, List)
             if (path === '/api/requests' && method === 'POST') {
                 const reqs = MockDB.get('requests', []);
+                const workerId = Number(body.worker_id) || 1;
+                const wprofiles = MockDB.get('worker_profiles', []);
+                const wp = wprofiles.find(w => w.user_id == workerId || w.id == workerId) || wprofiles[0] || {};
+
                 const newReq = {
                     id: Date.now(),
-                    customer_id: body.customer_id,
-                    worker_id: body.worker_id,
-                    customer_name: body.customer_name || 'Customer',
-                    worker_name: body.worker_name || 'Verified Expert',
-                    service_name: body.service_name || 'Home Maintenance',
+                    customer_id: body.customer_id || 6,
+                    worker_id: workerId,
+                    customer_name: body.customer_name || 'Gowtham Gorrepati',
+                    worker_name: body.worker_name || wp.name || 'Verified Expert',
+                    service_name: body.service_name || (wp.primary_skill ? `Master ${wp.primary_skill} Repair` : 'Master Cooperative Service'),
                     location: body.location || 'Bengaluru',
-                    booking_mode: body.booking_mode || 'INSTANT',
+                    booking_mode: body.booking_mode || body.booking_type || 'INSTANT',
+                    booking_type: body.booking_type || body.booking_mode || 'INSTANT',
                     scheduled_date: body.scheduled_date || null,
-                    scheduled_time_slot: body.scheduled_time_slot || null,
+                    scheduled_time_slot: body.scheduled_time_slot || body.scheduled_slot || null,
+                    scheduled_slot: body.scheduled_slot || body.scheduled_time_slot || null,
                     status: 'IN_PROGRESS',
-                    advance_paid: 100,
-                    final_bill: 499,
+                    advance_paid: Number(body.advance_paid) || 0,
+                    final_bill: Number(body.price) || 499,
+                    price: Number(body.price) || 499,
+                    payment_status: (Number(body.advance_paid) >= (Number(body.price) || 499)) ? 'FULLY_PAID' : ((Number(body.advance_paid) > 0) ? 'ADVANCE_PAID' : 'UNPAID'),
                     created_at: new Date().toISOString()
                 };
                 reqs.unshift(newReq);
@@ -2419,8 +2427,14 @@
                     return handleClientMockFetch(url, options);
                 }
             }
-            return _origFetch.call(this, url, options);
+            if (typeof _origFetch === 'function') {
+                return _origFetch.call(this, url, options);
+            }
+            return handleClientMockFetch(url, options);
         };
+        if (typeof globalThis !== 'undefined') {
+            globalThis.fetch = window.fetch;
+        }
 
         lucide.createIcons();
         let currentUser = null;
@@ -2476,7 +2490,7 @@
 
         // Role Switcher
         let activePortalRole = 'customer';
-        function switchRole(role) {
+        function switchRole(role, skipAuth = false) {
             activePortalRole = role;
 
             ['customer', 'worker', 'admin'].forEach(r => {
@@ -2493,7 +2507,7 @@
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
-            updateAuthUI();
+            if (!skipAuth) updateAuthUI();
 
             if (role === 'customer') {
                 loadCustomerData();
@@ -4395,6 +4409,15 @@
             }
         }
 
+        let currentSelectedWorkerName = 'Ramesh Kumar';
+        let currentSelectedWorkerSkill = 'Electrical';
+        let currentSelectedServicePrice = 499;
+
+        function updateServicePrice(serviceId) {
+            const prices = { '1': 499, '2': 399, '3': 599, '4': 799, '5': 699 };
+            currentSelectedServicePrice = prices[String(serviceId)] || 499;
+        }
+
         function setTimeSlot(slot) {
             currentScheduledSlot = slot;
             ['morning', 'afternoon', 'evening'].forEach(s => {
@@ -4411,61 +4434,100 @@
                 currentUser = { id: 6, name: "Gowtham Gorrepati", email: "gorrepatigowtham27@gmail.com", role: "CUSTOMER", gender: "Male" };
                 updateAuthUI();
             }
-            document.getElementById('req-worker-id').value = workerId;
-            document.getElementById('modal-worker-subtitle').textContent = `Booking verified professional: ${workerName}`;
+            currentSelectedWorkerName = workerName || 'Verified Technician';
+            currentSelectedWorkerSkill = workerSkill || 'General';
+
+            const wIdInput = document.getElementById('req-worker-id');
+            if (wIdInput) wIdInput.value = workerId;
             
-            if (workerSkill) {
-                const selectEl = document.getElementById('req-service-id');
-                if (selectEl) {
+            const subTitle = document.getElementById('modal-worker-subtitle');
+            if (subTitle) subTitle.textContent = `Booking verified professional: ${currentSelectedWorkerName}`;
+
+            const locInput = document.getElementById('req-location');
+            if (locInput && (!locInput.value || locInput.value.trim() === '')) {
+                locInput.value = 'Flat 402, Green Glen Layout, Bellandur, Bengaluru';
+            }
+
+            const selectEl = document.getElementById('req-service-id');
+            if (selectEl) {
+                if (workerSkill) {
                     const sk = workerSkill.toLowerCase();
                     if (sk.includes('electr')) selectEl.value = '1';
                     else if (sk.includes('plumb')) selectEl.value = '2';
                     else if (sk.includes('carpent') || sk.includes('wood')) selectEl.value = '3';
                     else if (sk.includes('paint')) selectEl.value = '4';
                     else if (sk.includes('clean') || sk.includes('sanit')) selectEl.value = '5';
-                    updateServicePrice(selectEl.value);
                 }
+                updateServicePrice(selectEl.value);
             }
 
             setBookingMode('INSTANT');
-            document.getElementById('service-req-modal').classList.remove('hidden');
+            const modal = document.getElementById('service-req-modal');
+            if (modal) modal.classList.remove('hidden');
+            lucide.createIcons();
         }
-        function closeServiceModal() { document.getElementById('service-req-modal').classList.add('hidden'); }
+
+        function closeServiceModal() { 
+            const modal = document.getElementById('service-req-modal');
+            if (modal) modal.classList.add('hidden'); 
+        }
 
         async function handleServiceRequestSubmit(e) {
             e.preventDefault();
-            const worker_id = document.getElementById('req-worker-id').value;
-            const service_id = document.getElementById('req-service-id').value;
-            const location = document.getElementById('req-location').value;
-            const description = document.getElementById('req-desc').value;
+            const worker_id = Number(document.getElementById('req-worker-id').value) || 1;
+            const service_id = Number(document.getElementById('req-service-id').value) || 1;
+            const location = document.getElementById('req-location').value || 'Bengaluru';
+            const description = document.getElementById('req-desc').value || 'Standard Maintenance Job';
             const advance_paid = Number(document.getElementById('req-advance-option').value) || 0;
             const scheduled_date = currentBookingMode === 'SCHEDULED' ? document.getElementById('req-date').value : null;
             const scheduled_slot = currentBookingMode === 'SCHEDULED' ? currentScheduledSlot : null;
+
+            const serviceNames = {
+                1: 'Master Electrical Repair',
+                2: 'Precision Plumbing & Leak Fix',
+                3: 'Custom Carpentry & Woodwork',
+                4: 'Wall Painting & Waterproofing',
+                5: 'Deep Home Cleaning & Sanitisation'
+            };
+            const servicePrices = { 1: 499, 2: 399, 3: 599, 4: 799, 5: 699 };
+            const finalPrice = servicePrices[service_id] || 499;
+            const serviceName = serviceNames[service_id] || 'Verified Cooperative Trade Service';
 
             try {
                 const res = await fetch('/api/requests', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        customer_id: currentUser.id,
+                        customer_id: currentUser ? currentUser.id : 6,
+                        customer_name: currentUser ? currentUser.name : 'Gowtham Gorrepati',
                         worker_id,
+                        worker_name: currentSelectedWorkerName,
                         service_id,
+                        service_name: serviceName,
                         description,
                         location,
-                        price: 499,
+                        price: finalPrice,
                         advance_paid,
                         booking_type: currentBookingMode,
+                        booking_mode: currentBookingMode,
                         scheduled_date,
-                        scheduled_slot
+                        scheduled_slot,
+                        scheduled_time_slot: scheduled_slot
                     })
                 });
                 const json = await res.json();
                 if (json.success) {
                     closeServiceModal();
-                    showToast('Booking & SMS Dispatched! 🚀', 'Technician alerted via carrier SMS.');
+                    showToast('Booking Dispatched! 🚀', `Booked ${currentSelectedWorkerName} for ${serviceName}. Carrier SMS dispatched.`);
                     switchCustomerTab('requests');
-                } else { alert(json.message); }
-            } catch (e) { alert('Failed to send request'); }
+                    loadCustomerRequests();
+                } else { 
+                    alert(json.message || 'Booking submission returned an error.'); 
+                }
+            } catch (e) { 
+                console.error('Service request error:', e);
+                alert('Failed to send request: ' + e.message); 
+            }
         }
 
         // ================= EMERGENCY & SOS DISPATCH =================
@@ -5162,7 +5224,6 @@
                             </div>
                         `;
                     }
-                    switchRole('customer', true);
                 } else if (currentUser.role === 'WORKER') {
                     if (greeting) greeting.innerHTML = `<span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">👷 ${currentUser.name} (Worker)</span>`;
                     if (roleNav) {
@@ -5177,7 +5238,6 @@
                             </div>
                         `;
                     }
-                    switchRole('worker', true);
                 } else if (currentUser.role === 'ADMIN') {
                     if (greeting) greeting.innerHTML = `<span class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/30">🏛️ ${currentUser.name} (Admin)</span>`;
                     if (roleNav) {
@@ -5192,7 +5252,6 @@
                             </div>
                         `;
                     }
-                    switchRole('admin', true);
                 }
             } else {
                 if (unlogged) unlogged.classList.remove('hidden');
