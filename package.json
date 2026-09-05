@@ -1,14 +1,20 @@
 {
-  "name": "coopserve-platform",
+  "name": "cooperative-service-marketplace",
   "version": "1.0.0",
-  "description": "Cooperative Service Marketplace Platform (CoopServe)",
-  "main": "server.js",
+  "description": "Cooperative-Owned Digital Service Marketplace Platform (SahakarSeva)",
   "scripts": {
-    "start": "node server.js"
+    "dev": "node start-dev.js",
+    "start": "node start-dev.js",
+    "backend": "node backend/server.js",
+    "frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend"
   },
-  "dependencies": {
-    "@libsql/client": "^0.17.4",
-    "cors": "^2.8.5",
-    "express": "^4.19.2"
-  }
+  "keywords": [
+    "cooperative",
+    "marketplace",
+    "labour-federation",
+    "sahakarseva"
+  ],
+  "author": "SahakarSeva Team",
+  "license": "ISC"
 }
